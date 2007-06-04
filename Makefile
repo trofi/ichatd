@@ -24,7 +24,7 @@ obj:
 	mkdir $@
 
 clean:
-	rm -rf $(TARGET) src/*~ TAGS BROWSE
+	rm -rf $(TARGET) src/*~ obj/* TAGS BROWSE
 
 TAGS:
 	src/etags *.[ch]
