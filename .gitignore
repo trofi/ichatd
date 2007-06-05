@@ -1,2 +1,4 @@
 obj/*
 ichatd
+ichatd.log
+ichatd.pid
