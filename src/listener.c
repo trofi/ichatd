@@ -672,7 +672,7 @@ user_process_data (USER * user)
     // send message here
     {
         // find data length
-        size_t msglen = user->dataptr + user->data_msgsize - ptr;
+        size_t msglen = user->data_msgsize - (ptr - user->dataptr);
         char prefix[32], prefix2[256];
         size_t prefixlen, prefix2len;
         struct tag__SEND_COOKIE cookie; 
@@ -684,8 +684,7 @@ user_process_data (USER * user)
         cookie.id_to = msg_to;
 
         // prefix for user messages...
-        snprintf (prefix, sizeof (prefix) - 1, "%u%cFORWARD%c", msglen + 8, 0, 0); // 8 - size of FORWARD\0
-        prefixlen = strlen (prefix);
+        prefixlen = snprintf (prefix, sizeof (prefix) - 1, "%u%cFORWARD%c", msglen + 8, 0, 0); // 8 - size of FORWARD\0
 
         cookie.buf1 = prefix;
         cookie.buf1len = prefixlen;
