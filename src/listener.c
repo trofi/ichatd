@@ -611,12 +611,13 @@ user_process_data (USER * user)
 
  
     msg_from = memchr (user->dataptr, 0, dsize); // this skips message length field
+//skip invalid messages
 #define CHECK_BOUNDS(p, err_msg)                    \
     if (!p                                          \
         || p >= user->dataptr + user->data_msgsize) \
     {                                               \
         IMPORTANT(err_msg);                         \
-        return 0;                                   \
+        return 1;                                   \
     }
 
     CHECK_BOUNDS (msg_from, "ERROR: No data in LENGTH field");
@@ -626,7 +627,7 @@ user_process_data (USER * user)
     if (strncmp (msg_from, real_prefix, strlen (real_prefix)))
     {
         FATAL("ERROR: mister %s sent packet with FROM field containing <%s>", real_prefix, msg_from);
-        return 0;
+        return 1;
     }
 
     dsize -= (msg_from - user->dataptr); // correct msgsize
@@ -655,7 +656,7 @@ user_process_data (USER * user)
     if (strcmp (msg_cmd, "FORWARD"))    
     {
         IMPORTANT("ERROR: Unknown command: %s", msg_cmd);
-        return 0;
+        return 1;
     }
 #undef CHECK_BOUNDS
 
