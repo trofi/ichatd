@@ -354,9 +354,9 @@ client_clean (CLIENT * client)
     pthread_mutex_destroy (&client->sq_mutex);
     DEBUG("i'm freeing queue");
     {
-        struct tagCLIENTMSG * msg = client->sq;
+        struct tagCLIENTMSG * msg;
 
-        while (msg)
+        while ( (msg = client->sq) )
         {
             client->sq = msg->next;
             free (msg);
