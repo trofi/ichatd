@@ -1,6 +1,0 @@
-2006-06-01  Sergei Trofimovich  <slyfox@slyfox.zhodino.net>
-
-	* src/ : renamed global vars
-	* Makefile : made gmake compatible (untested with BSD)
-	* ichatserv.h: renamed ichansrvd to ichatd (everywhere)
-	* main.c : removed SO_REUSEPORT
