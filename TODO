@@ -1,15 +1,18 @@
 Todo:
 * make shutdown (2) BSD #ifdefable
+* make -c|--config -f|--foreground options
+* make user drop privs setuid/setgid (as squid does)
+* "make install"
 
 Done:
 + change signal to sigaction
++ enable IP checking
++ fixed memleak (main.c: client_clean commented out 'cos valgrind said...:])
 
 FAR:
 * create ctx structure for runtime config options
 * enable runtime control function (ex: UNIX socket, FIFO)
-* enable IP checking (semidone, intel arch dependant)
 * send quit signal to all on socket error
 * strange falldowns ...
 * strange client close sockets (many client from 1 host, maybe, unidentified)
 * remove userlevel IO FILE * structures in sighandlers
-* memleak (main.c: client_clean commented out 'cos valgrind said...:])
