@@ -3,6 +3,7 @@ Todo:
 * make -c|--config -f|--foreground options
 * make user drop privs setuid/setgid (as squid does)
 * "make install"
+* add build date and maybe git commit info
 
 Done:
 + change signal to sigaction
