@@ -1,4 +1,4 @@
-I'd like to have here bunch of regtest for various aspects on this server:
+I'd like to have here bunch of regtests for various aspects on this server:
     * server load imitation (for valgrind explorations)
-    * compilation testing
+    * compilation testing (api breakage)
     * invariants testing (ex. message boxing/unboxing)
