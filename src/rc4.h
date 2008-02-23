@@ -1,6 +1,7 @@
-#ifndef _RC4_H
-#define _RC4_H
+#ifndef __RC4_H__
+#define __RC4_H__
 
+struct rc4_state;
 struct rc4_state
 {
     int x, y, m[256];
@@ -16,4 +17,4 @@ void rc4_crypt (
     unsigned char    * data,
     int                length);
 
-#endif // _RC4_H
+#endif // __RC4_H__

@@ -1,0 +1,39 @@
+milestone 1:
+    * make buffer, msg, msgio: icmsgio, ctlmsgio
+    * impl ctl server/client
+    * make compile all the stuff ;]
+REACHED: 2007/11/07
+
+milestone 2:
+    * form frame to implement some servers
+    * write all the old functionality (ichatd)
+
+milestone 3:
+    * make in compiled by gcc , make it compiled by g++ ;]
+      ('class' vars, struct alike vars: struct msg * msg)
+    * clean by valgrind
+    * clean by mudflap
+    * cleanup by flawfinder
+
+....
+
+milestone N:
+    * simlify/modularize IO (static/dynamic send/recv ring)
+    * buffer pool
+    * dynamic plugins (dlopen/register/unregister/dlclose)
+    * config ops, attached to plugins
+
+
+stuff:
+    * hide client structures to private implementation, define interfaces
+
+thoughts about laziness:
+    * We can share same data, but track different offsets, sizes.
+      It's useful to work with packed to one string structures as unpacked.
+
+problems:
+    * client agnostic message repr (ichat part)
+    * buffer queues are builtin in burref (that's wrong,
+      they potentially can be placed into multiple lists)
+    * remove redundant code: make generic client/server (at least via macros)
+    * add timer infrastructure (ex: register delayed remote client connection)

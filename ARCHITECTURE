@@ -1,0 +1,57 @@
+// -*- text -*-
+
+Some architectural images and defs.
+
+server:
+------
+Server - generic dispather between clients.
+
+Every client has:
+   file descriptor: fd
+                    next (pointer to next client)
+                    corrupt (if 1 - client scheduled for deletion)
+		    type (type of client: ichat server socket, control client socket, etc.)
+   operations(ops): read,
+                    write,
+                    except,
+                    destroy. // needed for destroy impl
+   private data:    impl (void *)
+
+   *_create(fd) function
+   *_destroy(p) function
+
+Server polls events in main loop and executes registered clients' ops.
+
+client:
+-------
+Client examples:
+    server sockets:
+        fd: server socket
+        ops:
+            read: accept, enqueue
+            write: null
+            except: close, open server socket
+
+buffers:
+--------
+Supports refcounting, dynamic resizing, splitting.
+
+Working semantics:
+
+function-creator:
+f_c()
+{
+    b = buffer_alloc (); // ref count = 1
+
+    use_buffer_code (b);
+
+    buffer_unref (b);
+}
+
+function-user:
+f_u(b)
+{
+    use_buffer_code (b);
+    add_to_dynamic_structure (buffer_ref (b));
+    remove_from_dyn_struct (buffer_unref (b2));
+}

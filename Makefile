@@ -1,32 +1,34 @@
 TARGET  = ichatd
 
 # features:
-# LINUX_PPOLL
+# LINUX_PPOLL (unimpl ;])
 
-CC      := gcc
-CFLAGS  += -MMD -W -Wall -g -O0 -D_REENTRANT -D_THREAD_SAFE -D__POSIX__ # -DLINUX_PPOLL
-LIBS    += -pthread
+CFLAGS  += -MMD -W -Wall -Werror -g -O0 -Isrc -fmudflap # -DLINUX_PPOLL
+LIBS    += -lmudflap
 
-SRC     := $(wildcard src/*.c)
+SRC     := $(wildcard src/*.c src/*/*.c src/*/*/*.c)
+HDR     := $(wildcard src/*.h src/*/*.h src/*/*/*.h)
+
 OBJS    := $(SRC:src/%.c=obj/%.o)
 
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	@$(CC) $(CFLAGS)    $^ -o $@ $(LIBS)
+	@$(CC) $(CFLAGS) $^ -o $@ $(LIBS)
 	@echo "[LD] $@"
 
 obj/%.o: src/%.c
+	@mkdir -p $$(dirname $@)
 	@$(CC) $(CFLAGS) -c $< -o $@
 	@echo "[CC] $@"
 
-obj:
-	mkdir $@
-
 clean:
-	rm -rf $(TARGET) src/*~ obj/* TAGS BROWSE
+	rm -rf $(TARGET) src/*~ src/*/*~ src/*/*/*~ obj/* TAGS BROWSE
 
-TAGS:
-	src/etags *.[ch]
+TAGS: $(SRC) $(HDR)
+	etags $^
 
--include obj/*.d
+run: $(TARGET)
+	./$(TARGET)
+
+-include obj/*.d obj/*/*.d obj/*/*/*.d
