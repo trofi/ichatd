@@ -24,6 +24,7 @@
 #include "misc.h"
 #include "list.h"
 #include "log.h"
+#include "task.h"
 
 struct server *
 server_alloc (void)
@@ -147,6 +148,40 @@ server_remove_client(struct server * server, struct client * client)
     return 0;
 }
 
+enum SERVER_STATUS
+server_add_task (struct server * server, struct timed_task * task)
+{
+    if (!server->task ||
+        task->time < server->task->time)
+    {
+        task->next = server->task;
+        server->task = task;
+        return SERVER_OK;
+    }
+
+    struct timed_task * prev = server->task;
+    // find place to drop in task
+    while (prev->next
+           && prev->next->time < task->time)
+        prev = prev->next;
+
+    // insert right after prev
+    task->next = prev->next;
+    prev->next = task->next;
+    return SERVER_OK;
+}
+
+struct timed_task *
+server_pop_task (struct server * server)
+{
+    if (!server->task)
+        return SERVER_OK;
+    struct timed_task * prev = server->task;
+
+    server->task = prev->next;
+    return prev;
+}
+
 const char *
 server_error (struct server * server)
 {
@@ -158,6 +193,7 @@ server_error (struct server * server)
 static int server_init_log_subsystem (struct server * server);
 static int server_detach (struct server * server);
 static int server_bind_ports (struct server * server);
+static int server_register_heartbeats (struct server * server);
 static enum SERVER_STATUS server_start_dispatcher (struct server * server);
 
 enum SERVER_STATUS
@@ -169,6 +205,7 @@ server_run (struct server * server)
     server_init_log_subsystem (server);
     server_detach (server);
     server_bind_ports (server);
+    server_register_heartbeats (server);
     server_start_dispatcher (server);
 
     return SERVER_OK;
@@ -266,6 +303,29 @@ server_bind_ports (struct server * server)
     return 0;
 }
 
+static void
+heartbeat (void * data)
+{
+    struct server ** server = data;
+    NOTE ("-- HEARTBEAT --");
+    // reregister event
+    server_register_heartbeats (*server);
+}
+
+static int
+server_register_heartbeats (struct server * server)
+{
+    // hack for free() in dtor of tack
+    // TODO: rework destructor interface
+
+    struct server ** data = malloc (sizeof(struct server *));
+    *data = server;
+    // 5 min
+    struct timed_task * task = task_create (1000 * 5 * 60, heartbeat, data);
+    server_add_task (server, task);
+    return 0;
+}
+
 static int
 server_close_ports (struct server * server)
 {
@@ -333,9 +393,9 @@ server_start_dispatcher (struct server * server)
     {
         enum POLL_RESULT result = server_poll (server);
         if (result == POLL_ERROR)
-            return 0; //FIXME: set proper error
+            return SERVER_OK; //FIXME: set proper error
     }
-    return 0;
+    return SERVER_OK;
 }
 
 static int

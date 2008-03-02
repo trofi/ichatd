@@ -11,6 +11,8 @@
 #include "client.h"
 
 #include "log.h"
+#include "task.h"
+#include "misc.h"
 
 //#define ENABLE_POLL_DEBUG 1
 #ifdef ENABLE_POLL_DEBUG
@@ -31,11 +33,11 @@ server_poll (struct server * server)
     {
         // TODO: perf lossy cycle
         // TODO: redo lame stupid structure
-	// TODO: all these loops are iterating
-	//       thru all clients - it's not acceptable
-	//       i can reduce number of clients building
-	//       shorted (active) queue
-	// TODO: lame list_for_each API: broken deletion :]
+        // TODO: all these loops are iterating
+        //       thru all clients - it's not acceptable
+        //       i can reduce number of clients building
+        //       shorted (active) queue
+        // TODO: lame list_for_each API: broken deletion :]
 
         list_for_each(clnt, server->clist)
         {
@@ -89,14 +91,29 @@ server_poll (struct server * server)
     }
     POLL_DEBUG ("poller: fill done");
 
-    // TODO: add sane timeout computation (support timer scheduled jobs)
-    int result = select (max_fd + 1, &rd, &wr, &ex, NULL);
+    struct timeval tv = { 0, 0 };
+    struct timeval * ptv = NULL;
+    
+    if (server->task) // yet tasks, which can be timed out
+    {
+        ptv = &tv;
+        long long curr  = GetTimerMS();
+        long long sched = server->task->time;
+        if (sched <= curr)
+        {
+            POLL_DEBUG ("poller: we are here: late = %d us", (long)(curr - sched)*1000);
+            tv.tv_usec = 10000; // let's wait a little (10ms)
+        }
+        else
+        {
+            POLL_DEBUG ("poller: set timeout to %ld us", (long)((sched - curr)*1000));
+            tv.tv_usec = (sched - curr)*1000; // TODO: explicit check
+        }
+    }
 
-    if ((result == -1 && errno == EINTR)
-        || result == 0)
-        return POLL_IDLE;
+    int result = select (max_fd + 1, &rd, &wr, &ex, ptv);
 
-    if (result == -1)
+    if (result == -1 && errno != EINTR)
     {
         DEBUG ("poll error: %s", strerror (errno));
         return POLL_ERROR;
@@ -119,6 +136,17 @@ server_poll (struct server * server)
             clnt->op.error (server, clnt);
             POLL_DEBUG ("poller: do [E]%d", clnt->fd);
         }
+    }
+    POLL_DEBUG ("poller: timeouts check");
+    while (server->task
+            && server->task->time <= GetTimerMS())
+    {
+        struct timed_task * task = server_pop_task (server);
+
+        POLL_DEBUG ("poller: popping + execing task %p", task);
+
+        task_run (task);
+        task_destroy (task);
     }
     POLL_DEBUG ("poller: check done");
     return POLL_OK;

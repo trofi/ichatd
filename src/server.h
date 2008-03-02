@@ -3,6 +3,7 @@
 
 struct server;
 struct client;
+struct timed_task;
 
 // allocation/value integrity
 struct server * server_alloc (void);
@@ -27,6 +28,9 @@ enum SERVER_STATUS server_status(struct server * server);
 enum SERVER_STATUS server_add_client(struct server * server, struct client * client);
 struct client * server_remove_client(struct server * server, struct client * client);
 
+enum SERVER_STATUS server_add_task(struct server * server, struct timed_task * task);
+struct timed_task * server_pop_task(struct server * server);
+
 const char * server_error (struct server * server);
 
 struct server
@@ -34,6 +38,7 @@ struct server
     char * config_filename;  // current config file name
     struct config * config;
     struct client * clist;   // list of clients
+    struct timed_task * task;   // list of scheduled tasks
 };
 
 #endif // __SERVER_H__
