@@ -20,6 +20,7 @@
 
 #include "ichat/proto/icc2s.h"
 #include "ichat/proto/icmisc.h"
+#include "ichat/proto/ichat_dispatch.h"
 
 static void ichat_client_read_op(struct server * server, struct client * client);
 static void ichat_client_write_op(struct server * server, struct client * client);
@@ -52,6 +53,7 @@ ichat_client_process_message (struct server * server,
     struct ichat_client_impl * impl = client->impl;
     assert (impl);
 
+    // validate
     struct icc2s * icmsg = ichat_buffer_to_icc2s (msg);
     if (!icmsg)
     {
@@ -60,6 +62,7 @@ ichat_client_process_message (struct server * server,
         return;
     }
 
+    // gather some info
     struct buffer * sig = icc2s_sender (icmsg);
     if (ichat_sig_cmp (sig, impl->sig))
     {
@@ -74,18 +77,7 @@ ichat_client_process_message (struct server * server,
         buffer_unref (sig);
     }
 
-    struct buffer * receiver = icc2s_receiver (icmsg);
-    if (ichat_sig_is_broadcast (receiver))
-    {
-        DEBUG ("broadcasting msg");
-        ichat_broadcast (server, client, msg);
-    }
-    else
-    {
-        DEBUG ("unicasting msg");
-        ichat_unicast (server, client, receiver, msg);
-    }
-    buffer_unref (receiver);
+    ichat_dispatch (server, client, msg);
     icc2s_unref (icmsg);
 }
 

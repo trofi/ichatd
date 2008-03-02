@@ -20,6 +20,7 @@
 
 #include "ichat/proto/ics2s.h"
 #include "ichat/proto/icmisc.h"
+#include "ichat/proto/ichat_dispatch.h"
 
 static void ichat_s2s_client_read_op(struct server * server, struct client * client);
 static void ichat_s2s_client_write_op(struct server * server, struct client * client);
@@ -98,8 +99,7 @@ ichat_s2s_client_process_message (struct server * server,
     {
         if (impl->is_authenticated)
         {
-            DEBUG ("broadcasting msg");
-            ichat_broadcast (server, client, clnt_msg);
+            ichat_dispatch (server, client, clnt_msg);
         }
         else
         {

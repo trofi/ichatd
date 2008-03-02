@@ -350,8 +350,8 @@ start_s2s_link (struct server * server, const char * host, int port, const char 
 static int
 server_register_s2s_links (struct server * server)
 {
+    assert (server);
     // TODO: FIXME: here can be server set to connect to
-    // start_s2s_link (server, host, port, pass);
     return 0;
 }
 
