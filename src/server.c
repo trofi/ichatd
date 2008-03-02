@@ -1,3 +1,9 @@
+//
+// All the file is full of mess
+// It's more experimenting field, than structural
+// Most of content should be moved out
+//
+
 #include <assert.h>
 #include <string.h>
 #include <stdlib.h>
@@ -194,6 +200,7 @@ static int server_init_log_subsystem (struct server * server);
 static int server_detach (struct server * server);
 static int server_bind_ports (struct server * server);
 static int server_register_heartbeats (struct server * server);
+static int server_register_s2s_links (struct server * server);
 static enum SERVER_STATUS server_start_dispatcher (struct server * server);
 
 enum SERVER_STATUS
@@ -206,6 +213,7 @@ server_run (struct server * server)
     server_detach (server);
     server_bind_ports (server);
     server_register_heartbeats (server);
+    server_register_s2s_links (server);
     server_start_dispatcher (server);
 
     return SERVER_OK;
@@ -325,6 +333,29 @@ server_register_heartbeats (struct server * server)
     server_add_task (server, task);
     return 0;
 }
+
+////////////////
+
+#include "ichat/s2s_client/ichat_s2s_client.h"
+
+static int
+start_s2s_link (struct server * server, const char * host, int port, const char * password)
+{
+    int remote = IC_nonblock_connect (host, port);
+    struct client * client = ichat_s2s_client_create (remote, OUT_AUTH, password);
+    server_add_client (server, client);
+    return 0;
+}
+
+static int
+server_register_s2s_links (struct server * server)
+{
+    // TODO: FIXME: here can be server set to connect to
+    // start_s2s_link (server, host, port, pass);
+    return 0;
+}
+
+////////////////////
 
 static int
 server_close_ports (struct server * server)

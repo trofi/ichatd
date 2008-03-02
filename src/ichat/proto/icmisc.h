@@ -1,7 +1,7 @@
-#ifndef __ICHAT_PROTO_MISC_H__
-#define __ICHAT_PROTO_MISC_H__
+#ifndef __ICMISC_H__
+#define __ICMISC_H__
 
-// some limith
+// some limits
 enum { 
     // TODO: compute it properly
     MIN_ICHAT_MESSAGE_LEN = 20,
@@ -24,4 +24,17 @@ int ichat_sig_is_broadcast (const struct buffer * sig);
 // strcmp/memcmp alike
 int ichat_sig_cmp (const struct buffer * sig1, const struct buffer * sig2);
 
-#endif // __ICHAT_PROTO_MISC_H__
+// dispatch stuff
+struct server;
+struct client;
+// TODO: place them to separate header
+void ichat_broadcast (struct server * server,
+                      struct client * client, // originator
+                      struct buffer * msg);
+void
+ichat_unicast (struct server * server,
+               struct client * client, // originator
+               const struct buffer * receiver,
+               struct buffer * msg);
+
+#endif // __ICMISC_H__

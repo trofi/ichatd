@@ -22,6 +22,11 @@ obj/%.o: src/%.c
 	@$(CC) $(CFLAGS) -c $< -o $@
 	@echo "[CC] $@"
 
+obj/%.C: src/%.c
+	@mkdir -p $$(dirname $@)
+	@$(CC) $(CFLAGS) -E $< -o $@
+	@echo "[CC] $@"
+
 clean:
 	rm -rf $(TARGET) src/*~ src/*/*~ src/*/*/*~ obj/* TAGS BROWSE
 

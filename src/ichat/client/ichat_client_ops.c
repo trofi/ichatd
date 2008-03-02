@@ -19,7 +19,7 @@
 #include "misc.h"
 
 #include "ichat/proto/icc2s.h"
-#include "ichat/proto/misc.h"
+#include "ichat/proto/icmisc.h"
 
 static void ichat_client_read_op(struct server * server, struct client * client);
 static void ichat_client_write_op(struct server * server, struct client * client);
@@ -39,47 +39,6 @@ struct ops ichat_client_ops = {
     .can_write    = ichat_client_can_write_op,
     .destroy      = ichat_client_destroy
 };
-
-static void
-ichat_broadcast (struct server * server,
-                 struct client * client, // originator
-                 struct buffer * msg)
-{
-    struct client * clnt = 0;
-    list_for_each(clnt, server->clist)
-    {
-        if (clnt->type == ICHAT_CLIENT
-            || (clnt->type == ICHAT_S2S_CLIENT && clnt != client)) // avoid loops
-        {
-            DEBUG ("send %p -> %p", client, clnt);
-            clnt->op.add_message (server, clnt, msg);
-        }
-    }
-}
-
-static void
-ichat_unicast (struct server * server,
-               struct client * client, // originator
-               const struct buffer * receiver,
-               struct buffer * msg)
-{
-    assert (server);
-    assert (client);
-    assert (receiver);
-    assert (msg);
-
-    // TODO: unicast on remote server howto? (keep list of clients?)
-    struct client * clnt = 0;
-    list_for_each(clnt, server->clist)
-    {
-        if (clnt->type == ICHAT_CLIENT
-            && ichat_sig_cmp (receiver,
-                              ((struct ichat_client_impl *)(clnt->impl))->sig) == 0)
-        {
-            clnt->op.add_message (server, clnt, msg);
-        }
-    }
-}
 
 static void
 ichat_client_process_message (struct server * server,
@@ -106,8 +65,9 @@ ichat_client_process_message (struct server * server,
     {
         buffer_unref (impl->sig);
         impl->sig = sig;
-        // TODO: prettyprint sig
-        DEBUG ("client %p registered with sig <%s>", client, buffer_data (sig));
+        // TODO: FIXME: prettyprint sig
+        DEBUG ("client %p registered with sig:", client);
+        log_print_array (DEBUG_LEVEL, buffer_data (sig), buffer_size (sig));
     }
     else
     {
@@ -245,6 +205,7 @@ ichat_client_write_op(struct server * server,
     impl->bytes_written = 0;
 
     while (result
+           && impl->bo
            && (size_t)result >= buffer_size(impl->bo))
     {
         struct buffer * old_head = impl->bo;
@@ -265,16 +226,6 @@ ichat_client_error_op(struct server * server,
     assert (server);
     assert (client);
     client->corrupt = 1;
-}
-
-/////
-// detects how many digits number contain
-//
-static size_t number_len (size_t number)
-{
-    if (number < 10)
-        return 1;
-    return 1 + number_len (number / 10);
 }
 
 // TODO: add arbitrary data injection to data channels

@@ -90,6 +90,13 @@ IC_nonblock_connect (const char * raddr, int port)
     return -1;
 }
 
+size_t number_len (size_t number)
+{
+    if (number < 10)
+        return 1;
+    return 1 + number_len (number / 10);
+}
+
 long long
 GetTimerMS(void)
 {

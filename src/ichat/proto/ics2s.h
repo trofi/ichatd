@@ -13,4 +13,7 @@ struct buffer * ics2s_timestamp (struct ics2s * s2s_msg);
 struct buffer * ics2s_command (struct ics2s * s2s_msg);
 struct buffer * ics2s_data (struct ics2s * s2s_msg);
 
+// some buffer making stuff
+struct buffer * s2s_make_login_msg (const char * server_name, const char * password);
+
 #endif // __ICS2S_H__

@@ -1,5 +1,6 @@
 #include <assert.h>
 #include <stdlib.h>
+#include <stdio.h>
 #include <string.h>
 
 #include "buffer.h"
@@ -16,6 +17,9 @@ struct ics2s {
 
     const char * command;
     int command_len;
+    
+    const char * data_len_field;
+    int data_len_field_len;
 
     const char * msg_data;
     int msg_data_len;
@@ -74,6 +78,18 @@ ichat_buffer_to_ics2s (struct buffer * msg)
 
     b_data = cmd_end + 1;
     b_size -= s2s_msg->command_len + 1; //skip '\0'
+
+    //find data len (dunno who uses that stuff)
+    if (b_size <= 0)
+        goto e_bad_msg;
+    const char * data_len_field_end = memchr (b_data, 0, b_size);
+    if (!data_len_field_end)
+        goto e_bad_msg;
+    s2s_msg->data_len_field = b_data;
+    s2s_msg->data_len_field_len = data_len_field_end - b_data;
+
+    b_data = data_len_field_end + 1;
+    b_size -= s2s_msg->data_len_field_len + 1; //skip '\0'
 
     //store data
     if (b_size < 0)
@@ -159,6 +175,41 @@ ics2s_data (struct ics2s * s2s_msg)
         goto e_no_mem;
     buffer_set_size (b, s2s_msg->msg_data_len);
     memcpy (buffer_data (b), s2s_msg->msg_data, s2s_msg->msg_data_len);
+    return b;
+
+  e_no_mem:
+    return 0;
+}
+
+
+////////
+#include "config.h"
+#include "misc.h"
+
+struct buffer *
+s2s_make_login_msg (const char * server_name, const char * password)
+{
+    struct buffer * b = buffer_alloc ();
+    if (!b)
+        goto e_no_mem;
+
+    const char * command = "LOGIN";
+    // FIXME: fill it with normal data
+    const char * timestamp = "20080221212300123";
+
+    // [len][0x00][sender][0x00][timestamp][0x00][cmd][0x00][pass]
+    size_t len = strlen (server_name) + 1 + strlen (timestamp) + 1 + strlen (command) + 1 + strlen (password);
+    size_t full_len = number_len (len) + 1 + len;
+    buffer_set_size (b, full_len + 1); // +1 of '\0'
+    snprintf (buffer_data (b), full_len + 1,
+              "%d%c%s%c%s%c%s%c%s",
+                len, '\0',
+                    server_name, '\0',
+                        timestamp, '\0',
+                            command, '\0',
+                                password);
+
+    buffer_set_size (b, full_len); // trim last '\0'
     return b;
 
   e_no_mem:

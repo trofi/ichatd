@@ -12,11 +12,11 @@
 #include "log.h"
 
 struct client *
-ichat_s2s_client_create (int fd, enum AUTH_DIR auth_dir)
+ichat_s2s_client_create (int fd, enum AUTH_DIR auth_dir, const char * password)
 {
     struct client * client = client_create (fd, ICHAT_S2S_CLIENT, ichat_s2s_client_ops);
     // FIXME: handle memleaks, fdleaks
-    struct ichat_s2s_client_impl * impl = ichat_s2s_client_create_impl(auth_dir);
+    struct ichat_s2s_client_impl * impl = ichat_s2s_client_create_impl (auth_dir, password);
     client->impl = impl;
     // FIXME: handle memleaks, fdleaks
 

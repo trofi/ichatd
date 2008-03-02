@@ -15,6 +15,11 @@
 
 // some useful funs
 
+/////
+// detects how many digits number contain
+//
+size_t number_len (size_t number);
+
 // C like
 char * IC_strdup (const char * str);
 

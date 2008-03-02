@@ -19,7 +19,7 @@
 #include "misc.h"
 
 #include "ichat/proto/ics2s.h"
-#include "ichat/proto/misc.h"
+#include "ichat/proto/icmisc.h"
 
 static void ichat_s2s_client_read_op(struct server * server, struct client * client);
 static void ichat_s2s_client_write_op(struct server * server, struct client * client);
@@ -39,72 +39,6 @@ struct ops ichat_s2s_client_ops = {
     .can_write    = ichat_s2s_client_can_write_op,
     .destroy      = ichat_s2s_client_destroy
 };
-
-// TODO: rip me out here and place into shared header
-static void
-ichat_broadcast (struct server * server,
-                 struct client * client, // originator
-                 struct buffer * msg)
-{
-    struct client * clnt = 0;
-    list_for_each(clnt, server->clist)
-    {
-        if (clnt->type == ICHAT_CLIENT)
-        {
-            DEBUG ("[local] sending %p -> %p", client, clnt);
-            clnt->op.add_message (server, clnt, msg);
-        }
-        if (clnt->type == ICHAT_S2S_CLIENT
-            && clnt != client
-            && ((struct ichat_s2s_client_impl *)(clnt->impl))->is_authenticated)
-        {
-            DEBUG ("[s2s] sending %p -> %p", client, clnt);
-            clnt->op.add_message (server, clnt, msg);
-        }        
-    }
-}
-
-/*
-// TODO: rip me out here and place into shared header
-static void
-ichat_unicast (struct server * server,
-               struct client * client, // originator
-               const struct buffer * receiver,
-               struct buffer * msg)
-{
-    assert (server);
-    assert (client);
-    assert (receiver);
-    assert (msg);
-
-    // TODO: unicast on remote server howto? (keep list of clients?)
-    struct client * clnt = 0;
-    list_for_each(clnt, server->clist)
-    {
-        if (clnt->type == ICHAT_S2S_CLIENT
-            && ichat_sig_cmp (receiver,
-                              ((struct ichat_s2s_client_impl *)(clnt->impl))->sig) == 0)
-        {
-            clnt->op.add_message (server, clnt, msg);
-            return; // successfully delivered
-        }
-    }
-
-    // client isn't local, so send to all servers
-    // TODO: keep list of remotely announced clients
-    //       to avoud this broadcast
-    list_for_each(clnt, server->clist)
-    {
-        if (clnt->type == ICHAT_S2S_CLIENT
-            && clnt != client
-            && ((struct ichat_s2s_client_impl *)(clnt->impl))->is_authenticated)
-        {
-            DEBUG ("[s2s] sending %p -> %p", client, clnt);
-            clnt->op.add_message (server, clnt, msg);
-        }        
-    }
-}
-*/
 
 static void
 ichat_s2s_client_process_message (struct server * server,
@@ -132,7 +66,9 @@ ichat_s2s_client_process_message (struct server * server,
         buffer_unref (impl->sig);
         impl->sig = sig;
         // TODO: prettyprint sig
-        DEBUG ("client %p registered with sig <%s>", client, buffer_data (sig));
+        DEBUG ("client %p registered with sig:", client);
+        log_print_array (DEBUG_LEVEL, buffer_data (sig), buffer_size (sig));
+        
     }
     else
     {
@@ -297,6 +233,7 @@ ichat_s2s_client_write_op(struct server * server,
     impl->bytes_written = 0;
 
     while (result
+           && impl->bo
            && (size_t)result >= buffer_size(impl->bo))
     {
         struct buffer * old_head = impl->bo;
@@ -319,19 +256,9 @@ ichat_s2s_client_error_op(struct server * server,
     client->corrupt = 1;
 }
 
-/////
-// detects how many digits number contain
-//
-static size_t number_len (size_t number)
-{
-    if (number < 10)
-        return 1;
-    return 1 + number_len (number / 10);
-}
-
 // TODO: add arbitrary data injection to data channels
 // client/server2server testing purpose
-// [msg] -> [server][timestamp][command] [msg]
+// [msg] -> [server][timestamp][command][msg]
 static void
 ichat_s2s_client_add_message (struct server * server,
                               struct client * client,
@@ -348,16 +275,16 @@ ichat_s2s_client_add_message (struct server * server,
 ///////////////////////////
     // cmd - is [server][timestamp][command]
     // TODO: set dynamic: server_name, timestamp
-    const char * server_name = "STUB_SERVER";
+    const char * server_name = DEF_SERVER_NAME;
     const char * command = "FORWARD";
 
-    size_t cmd_size = strlen (server_name) + 1 + 17 /* timestamp*/ + 1 + strlen (command) + 1;
+    size_t cmd_size = strlen (server_name) + 1 + 17 /* timestamp*/ + 1 + strlen (command) + 1 + number_len(msg_size) + 1;
     struct buffer * cmd    = buffer_alloc ();
     buffer_set_size (cmd, cmd_size);
     snprintf (buffer_data (cmd), cmd_size,
-              "%s%c%s%c%s", server_name, '\0', "20080221212300123", '\0', command);
-
-    buffer_set_next (cmd, msg);
+              "%s%c%s%c%s%c%d", server_name, '\0', "20080221212300123", '\0', command, '\0', msg_size);
+    buffer_set_size (cmd, cmd_size);
+    buffer_set_next (cmd, buffer_ref (msg));
         
 ///////////////////////////
 

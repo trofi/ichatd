@@ -167,6 +167,7 @@ ctl_client_write_op(struct server * server,
     impl->bytes_written = 0;
 
     while (result
+           && impl->bo
            && (size_t)result >= buffer_size(impl->bo))
     {
         struct buffer * old_head = impl->bo;

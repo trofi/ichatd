@@ -181,13 +181,14 @@ get_buffer_list_iovec (struct buffer * b_list,
 {
     assert (b_list);
     assert (iov);
+    assert (iov_size);
 
     size_t full_avail_size = 0;
     int iov_ops = 0;
 
     struct buffer * b = b_list;
     for (;
-         b && (iov_ops < *iov_size);
+         b && buffer_size (b) && (iov_ops < *iov_size);
          ++iov_ops, b = b->next)
     {
         iov[iov_ops].iov_base = b->data;

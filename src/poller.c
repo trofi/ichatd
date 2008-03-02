@@ -102,7 +102,7 @@ server_poll (struct server * server)
         if (sched <= curr)
         {
             POLL_DEBUG ("poller: we are here: late = %d us", (long)(curr - sched)*1000);
-            tv.tv_usec = 10000; // let's wait a little (10ms)
+            tv.tv_usec = 10 * 1000; // let's wait a little (10ms)
         }
         else
         {

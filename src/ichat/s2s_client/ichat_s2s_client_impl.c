@@ -5,10 +5,10 @@
 
 #include "ichat_s2s_client_impl.h"
 
-//#include "log.h"
+#include "ichat/proto/ics2s.h"
 
 struct ichat_s2s_client_impl *
-ichat_s2s_client_create_impl (enum AUTH_DIR auth_dir)
+ichat_s2s_client_create_impl (enum AUTH_DIR auth_dir, const char * password)
 {
     struct ichat_s2s_client_impl * impl = (struct ichat_s2s_client_impl *)malloc (sizeof (struct ichat_s2s_client_impl));
     if (!impl)
@@ -27,8 +27,31 @@ ichat_s2s_client_create_impl (enum AUTH_DIR auth_dir)
     if (!impl->sig)
         goto e_no_mem;
 
+    if (!(impl->password = strdup (password)))
+        goto e_no_mem;
+
     impl->auth_dir = auth_dir;
-    impl->is_authenticated = 0;
+
+    switch (auth_dir)
+    {
+        case IN_AUTH:
+            impl->is_authenticated = 0;
+            break;
+        case OUT_AUTH:
+        {
+            // send login message immediately
+            // TODO: FIXME: stop these hacks with buffers
+            //              implement normal data send interface
+            //              check for memleaks
+#include "config.h"
+            struct buffer * b = s2s_make_login_msg (DEF_SERVER_NAME, password);
+            buffer_unref (impl->bo);
+            impl->bo = b;
+            impl->is_authenticated = 1;
+            break;
+        }
+    }
+
     impl->bytes_written = 0;
     
     return impl;
@@ -49,4 +72,5 @@ ichat_s2s_client_destroy_impl (struct ichat_s2s_client_impl * impl)
         buffer_unref(impl->bo);
     if (impl->sig)
         buffer_unref(impl->sig);
+    free ((char*)impl->password);
 }

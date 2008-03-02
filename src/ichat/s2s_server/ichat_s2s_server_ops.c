@@ -14,6 +14,7 @@
 #include "list.h"
 
 #include "log.h"
+#include "config.h"
 
 static void ichat_s2s_server_read_op(struct server * server, struct client * client);
 static void ichat_s2s_server_error_op(struct server * server, struct client * client);
@@ -45,7 +46,8 @@ ichat_s2s_server_read_op(struct server * server,
         return;
     }
     DEBUG("new client = %d", new_client_fd);
-    struct client * new_client = ichat_s2s_client_create (new_client_fd, IN_AUTH);
+    struct client * new_client = ichat_s2s_client_create (new_client_fd, IN_AUTH,
+                                 DEF_SERVER_PASSWORD /* FIXME: make it runtime modable */);
     if (!client)
     {
         WARN ("unable to create client. memory runout");
