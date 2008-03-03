@@ -68,7 +68,7 @@ ichat_client_process_message (struct server * server,
         buffer_unref (impl->sig);
         impl->sig = sig;
         // TODO: FIXME: prettyprint sig
-        NOTE ("%s: client[fd=%d] registered with sig:", client->fd);
+        NOTE ("%s: client[fd=%d] registered with sig:", __func__, client->fd);
         log_print_array (NOTE_LEVEL, buffer_data (sig), buffer_size (sig));
     }
     else
