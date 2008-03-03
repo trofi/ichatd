@@ -46,7 +46,6 @@ ichat_s2s_client_process_message (struct server * server,
                                   struct client * client,
                                   struct buffer * msg)
 {
-    DEBUG (__func__);
     assert (server);
     assert (client);
     assert (msg);
@@ -56,7 +55,7 @@ ichat_s2s_client_process_message (struct server * server,
     struct ics2s * icmsg = ichat_buffer_to_ics2s (msg);
     if (!icmsg)
     {
-        WARN ("s2s client sent malformed message");
+        NOTE ("%s: s2s client[fd=%d] sent malformed message", __func__, client->fd);
         client->corrupt = 1;
         return;
     }
@@ -67,8 +66,8 @@ ichat_s2s_client_process_message (struct server * server,
         buffer_unref (impl->sig);
         impl->sig = sig;
         // TODO: prettyprint sig
-        DEBUG ("client %p registered with sig:", client);
-        log_print_array (DEBUG_LEVEL, buffer_data (sig), buffer_size (sig));
+        NOTE ("%s: s2s client[fd=%d] registered with sig:", __func__, client->fd);
+        log_print_array (NOTE_LEVEL, buffer_data (sig), buffer_size (sig));
         
     }
     else
@@ -92,7 +91,7 @@ ichat_s2s_client_process_message (struct server * server,
             && memcmp (buffer_data (clnt_msg), real_pass, real_pass_len) == 0)
         {
             impl->is_authenticated = 1;
-            NOTE ("s2s client %p authenticated. Welcome");
+            NOTE ("s2s client[fd=%d] authenticated. Welcome", client->fd);
         }
     }
     else if (CMD_IS("FORWARD"))
@@ -103,13 +102,15 @@ ichat_s2s_client_process_message (struct server * server,
         }
         else
         {
-            DEBUG ("client %p tries to send data without being authenticated", client);
+            NOTE ("%s: s2s client[fd=%d] tries to send data without being authenticated", __func__, client->fd);
         }
     }
     else
     {
         // TODO: dump exact command
-        WARN ("client %p sent strange command", client);
+        WARN ("%s: s2s client[fd=%d] sent strange command:", client->fd);
+        log_print_array (WARN_LEVEL, buffer_data (cmd), buffer_size (cmd));
+        
     }
 #undef CMD_IS
     buffer_unref (cmd);
@@ -121,7 +122,6 @@ static void
 ichat_s2s_client_read_op(struct server * server,
                      struct client * client)
 {
-    DEBUG (__func__);
     assert (server);
     assert (client);
     struct ichat_s2s_client_impl * impl = client->impl;
@@ -132,7 +132,7 @@ ichat_s2s_client_read_op(struct server * server,
     switch (result)
     {
         case -1:
-            NOTE ("ichat s2s client %p read error (%s)", client, strerror (errno));
+            DEBUG ("%s: ichat s2s client[fd=%d] read error (%s)", __func__, client->fd, strerror (errno));
         case  0:
             client->corrupt = 1;
             return;
@@ -160,7 +160,7 @@ ichat_s2s_client_read_op(struct server * server,
         long msg_size = strtol (p, &end_ptr, 10);
         if (end_ptr == p)
         {
-            NOTE ("Header doesn't have header length");
+            NOTE ("%s: s2s client[fd=%d] header doesn't have header length", __func__, client->fd);
             client->corrupt = 1;
             return;
         }
@@ -171,7 +171,7 @@ ichat_s2s_client_read_op(struct server * server,
             || msg_size < MIN_ICHAT_MESSAGE_LEN
             || msg_size > MAX_ICHAT_MESSAGE_LEN)
         {
-            NOTE ("client sent bad packet: len = %s", p);
+            NOTE ("%s: s2s client[fd=%d] sent bad packet: len = %s", __func__, client->fd, p);
             client->corrupt = 1;
             return;
         }
@@ -219,7 +219,7 @@ ichat_s2s_client_write_op(struct server * server,
     switch (result)
     {
         case -1:
-            NOTE ("ichat s2s client %p write error (%s)", client, strerror (errno));
+            DEBUG ("%s: ichat s2s client[fd=%d] write error (%s)", __func__, client->fd, strerror (errno));
         case  0:
             client->corrupt = 1;
             return;
@@ -250,7 +250,6 @@ static void
 ichat_s2s_client_error_op(struct server * server,
                       struct client * client)
 {
-    DEBUG (__func__);
     assert (server);
     assert (client);
     client->corrupt = 1;
@@ -264,7 +263,6 @@ ichat_s2s_client_add_message (struct server * server,
                               struct client * client,
                               struct buffer * msg)
 {
-    DEBUG (__func__);
     assert (server);
     assert (client);
     assert (msg);
@@ -320,7 +318,6 @@ static int
 ichat_s2s_client_can_read_op(struct server * server,
                          struct client * client)
 {
-    DEBUG (__func__);
     assert (server);
     assert (client);
     return !client->corrupt;
@@ -330,7 +327,6 @@ static int
 ichat_s2s_client_can_write_op(struct server * server,
                           struct client * client)
 {
-    DEBUG (__func__);
     assert (server);
     assert (client);
 

@@ -23,7 +23,7 @@ config_alloc (void)
     
     if (!(config->log_file  = (char *)strdup ((const char *)DEF_LOG_FILE)))
         goto e_no_mem;
-    config->log_level       = DEBUG_LEVEL;
+    config->log_level       = NOTE_LEVEL;
     if (!(config->pid_file  = strdup (DEF_PID_FILE)))
         goto e_no_mem;
     config->null_clients    = 1;

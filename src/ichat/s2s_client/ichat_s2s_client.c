@@ -20,7 +20,7 @@ ichat_s2s_client_create (int fd, enum AUTH_DIR auth_dir, const char * password)
     client->impl = impl;
     // FIXME: handle memleaks, fdleaks
 
-    DEBUG ("ichat_s2s_client %p created [fd=%d]", client, fd);
+    DEBUG ("ichat_s2s_client created [fd=%d]", fd);
     return client;
 }
 
@@ -28,7 +28,7 @@ void
 ichat_s2s_client_destroy (struct client * client)
 {
     if (!client) return;
-    DEBUG ("ichat_s2s_client %p closed", client);
+    DEBUG ("ichat_s2s_client closed [fd=%d]", client->fd);
     if (client->impl)
         ichat_s2s_client_destroy_impl(client->impl);
 }

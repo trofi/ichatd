@@ -16,6 +16,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <signal.h>
+#include <errno.h>
 
 #include "config.h"
 
@@ -130,6 +131,7 @@ server_configure (struct server * server, int argc, char * argv[])
 enum SERVER_STATUS
 server_add_client(struct server * server, struct client * client)
 {
+    DEBUG("enaueued client[fd=%d]", client->fd);
     list_prepend (client, server->clist);
     return SERVER_OK;
 }
@@ -146,7 +148,7 @@ server_remove_client(struct server * server, struct client * client)
     {
         if (*phead == client)
         {
-            DEBUG("dequeued client");
+            DEBUG("dequeued client[fd=%d]", client->fd);
             *phead = (*phead)->next;
             return client;
         }
@@ -246,14 +248,14 @@ server_init_log_subsystem (struct server * server)
     struct config * config = server->config;
     open_log (config->log_file);
     set_log_level (config->log_level);
-    DEBUG("log subsystem inited");
+    NOTE ("log subsystem initialized");
     return 0;
 }
 
 static int
 server_close_log_subsystem (struct server * server UNUSED_SYMBOL)
 {
-    DEBUG("closing log subsystem");
+    NOTE ("closing log subsystem");
     close_log ();
     return 0;
 }
@@ -261,18 +263,19 @@ server_close_log_subsystem (struct server * server UNUSED_SYMBOL)
 static int
 server_bind_ports (struct server * server)
 {
+    NOTE ("binding ports");
     struct config * config = server->config;
 
     if (config->user_port)
     {
         int cli_server_fd = IC_bind_server_socket ("0.0.0.0", config->user_port);
-        DEBUG("binding server socket for ichat clients");
+        DEBUG ("binding server socket for ichat clients");
         if (cli_server_fd > 0)
         {    
             struct client * cli_server = (struct client *)ichat_server_create (cli_server_fd);
             if (!cli_server)
             {
-                WARN ("unable to bind ichat server socket for clients");
+                FATAL ("unable to bind ichat server socket for clients");
                 close (cli_server_fd);
             }
             else
@@ -282,7 +285,7 @@ server_bind_ports (struct server * server)
         }
         else
         {
-            WARN ("unable to bind server ichat socket for clients");
+            FATAL ("unable to bind server ichat socket for clients: %s", strerror (errno));
         }
     }
     
@@ -295,7 +298,7 @@ server_bind_ports (struct server * server)
             struct client * ctl_server = (struct client *)ctl_server_create (ctl_server_fd);
             if (!ctl_server)
             {
-                WARN ("unable to bind ichat control socket");
+                FATAL ("unable to bind ichat control socket");
                 close (ctl_server_fd);
             }
             else
@@ -305,7 +308,7 @@ server_bind_ports (struct server * server)
         }
         else
         {
-            WARN ("unable to bind ichat control socket");
+            FATAL ("unable to bind ichat control socket: %s", strerror (errno));
         }
     }
     return 0;
@@ -341,6 +344,7 @@ server_register_heartbeats (struct server * server)
 static int
 start_s2s_link (struct server * server, const char * host, int port, const char * password)
 {
+    NOTE ("LINK to %s:%d", host, port);
     int remote = IC_nonblock_connect (host, port);
     struct client * client = ichat_s2s_client_create (remote, OUT_AUTH, password);
     server_add_client (server, client);

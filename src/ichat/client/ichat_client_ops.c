@@ -46,7 +46,6 @@ ichat_client_process_message (struct server * server,
                               struct client * client,
                               struct buffer * msg)
 {
-    DEBUG (__func__);
     assert (server);
     assert (client);
     assert (msg);
@@ -57,7 +56,7 @@ ichat_client_process_message (struct server * server,
     struct icc2s * icmsg = ichat_buffer_to_icc2s (msg);
     if (!icmsg)
     {
-        WARN ("client sent malformed message");
+        NOTE ("%s: client[fd=%d] sent malformed message", __func__, client->fd);
         client->corrupt = 1;
         return;
     }
@@ -69,8 +68,8 @@ ichat_client_process_message (struct server * server,
         buffer_unref (impl->sig);
         impl->sig = sig;
         // TODO: FIXME: prettyprint sig
-        DEBUG ("client %p registered with sig:", client);
-        log_print_array (DEBUG_LEVEL, buffer_data (sig), buffer_size (sig));
+        NOTE ("%s: client[fd=%d] registered with sig:", client->fd);
+        log_print_array (NOTE_LEVEL, buffer_data (sig), buffer_size (sig));
     }
     else
     {
@@ -85,7 +84,6 @@ static void
 ichat_client_read_op(struct server * server,
                      struct client * client)
 {
-    DEBUG (__func__);
     assert (server);
     assert (client);
     struct ichat_client_impl * impl = client->impl;
@@ -96,7 +94,7 @@ ichat_client_read_op(struct server * server,
     switch (result)
     {
         case -1:
-            NOTE ("ctl client %p read error (%s)", client, strerror (errno));
+            DEBUG ("%s: ichat client[fd=%d] read error (%s)", __func__, client->fd, strerror (errno));
         case  0:
             client->corrupt = 1;
             return;
@@ -124,7 +122,7 @@ ichat_client_read_op(struct server * server,
         long msg_size = strtol (p, &end_ptr, 10);
         if (end_ptr == p)
         {
-            NOTE ("Header doesn't have header length");
+            NOTE ("%s: client[fd=%d]: header doesn't have header length", __func__, client->fd);
             client->corrupt = 1;
             return;
         }
@@ -135,7 +133,7 @@ ichat_client_read_op(struct server * server,
             || msg_size < MIN_ICHAT_MESSAGE_LEN
             || msg_size > MAX_ICHAT_MESSAGE_LEN)
         {
-            NOTE ("client sent bad packet: len = %s", p);
+            NOTE ("%s: client[fd=%d] sent bad packet: len = %s", __func__, client->fd, p);
             client->corrupt = 1;
             return;
         }
@@ -148,7 +146,7 @@ ichat_client_read_op(struct server * server,
             struct buffer * b = buffer_alloc();
             buffer_set_size(b, msg_size);
             memcpy (buffer_data (b), msg_data_start, msg_size);
-            DEBUG ("got message len = %d from client %p", msg_size, client);
+            DEBUG ("got message len = %d from client[fd=%d]", msg_size, client->fd);
             ichat_client_process_message (server, client, b);
             buffer_unref (b);
         }
@@ -165,7 +163,6 @@ static void
 ichat_client_write_op(struct server * server,
                       struct client * client)
 {
-    DEBUG (__func__);
     assert (server);
     assert (client);
     struct ichat_client_impl * impl = client->impl;
@@ -183,7 +180,7 @@ ichat_client_write_op(struct server * server,
     switch (result)
     {
         case -1:
-            NOTE ("ctl client %p write error (%s)", client, strerror (errno));
+            DEBUG ("ctl client[fd=%d] write error: %s", client->fd, strerror (errno));
         case  0:
             client->corrupt = 1;
             return;
@@ -214,7 +211,6 @@ static void
 ichat_client_error_op(struct server * server,
                       struct client * client)
 {
-    DEBUG (__func__);
     assert (server);
     assert (client);
     client->corrupt = 1;
@@ -228,7 +224,6 @@ ichat_client_add_message (struct server * server,
                           struct client * client,
                           struct buffer * msg)
 {
-    DEBUG (__func__);
     assert (server);
     assert (client);
     assert (msg);
@@ -280,7 +275,6 @@ static int
 ichat_client_can_read_op(struct server * server,
                          struct client * client)
 {
-    DEBUG (__func__);
     assert (server);
     assert (client);
     return !client->corrupt;
@@ -290,7 +284,6 @@ static int
 ichat_client_can_write_op(struct server * server,
                           struct client * client)
 {
-    DEBUG (__func__);
     assert (server);
     assert (client);
 
