@@ -387,28 +387,27 @@ server_detach (struct server * server)
         NOTE ("stay foreground");
         return 0;
     }
+    log_to_stdout (0); // disable logging to console
     if (getppid () != 1) // our parent is not init
     {
         int forker;
         struct sigaction sa;
-        // ignore some signals...
-        // TODO - why we do it here ? 
-        // why not after fork ?
         sa.sa_handler = SIG_IGN;
         sigaction (SIGTTIN, &sa, NULL);
         sigaction (SIGTTOU, &sa, NULL);
         sigaction (SIGTSTP, &sa, NULL);
 
-        // fork returns 0 in the child thread or -1 upon error
-        // otherwise it will return PID of new process
         forker = fork ();
         if (forker == -1)
             return 1;
-        else if (forker != 0) // i.e. we are in the caller
-            return 0;
+        else if (forker != 0)
+            exit (0); // father goes away
 
-        // set us as a process group leader... make anything else... stupid call. why we can't use CreateProcess
-        // with well documented API ?       
+        // FIXME: fdleaks?
+        //fclose (stdin);
+        //fclose (stdout);
+        //fclose (stderr);
+
         setsid ();
     }
     /*
