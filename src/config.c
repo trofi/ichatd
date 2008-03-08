@@ -309,7 +309,7 @@ parse_config (struct config * config, const char * fname)
         ++line_no;
         // zero trailing \r\n's
         char * end = line + strlen (line) - 1;
-        while (end > line && (*end == '\n' || *end == '\r')) *(end--) = '\0';
+        while (end >= line && (*end == '\n' || *end == '\r')) *(end--) = '\0';
 
         char * start = line;
         // skip spaces
@@ -332,10 +332,10 @@ parse_config (struct config * config, const char * fname)
         switch (parse_option (config, opt_name, opt_value))
         {
             case OPT_BAD_VAL:
-                WARN ("%d: option %s has bad value", line_no, opt_name);
+                fprintf (stderr, "%d: option %s has bad value", line_no, opt_name);
                 break;
             case OPT_UNKNOWN:
-                WARN ("%d: unknown option %s", line_no, opt_name);
+                fprintf (stderr, "%d: unknown option %s", line_no, opt_name);
                 break;
             case OPT_PARSED:
                 // all ok
