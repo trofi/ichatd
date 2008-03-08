@@ -24,6 +24,7 @@
 #include "client.h"
 #include "server.h"
 #include "ichat/server/ichat_server.h"
+#include "ichat/s2s_server/ichat_s2s_server.h"
 #include "ctl/server/ctl_server.h"
 
 #include "poller.h"
@@ -269,7 +270,7 @@ server_bind_ports (struct server * server)
         int cli_server_fd = IC_bind_server_socket ("0.0.0.0", config->user_port);
         DEBUG ("binding server socket for ichat clients");
         if (cli_server_fd > 0)
-        {    
+        {
             struct client * cli_server = (struct client *)ichat_server_create (cli_server_fd);
             if (!cli_server)
             {
@@ -286,7 +287,30 @@ server_bind_ports (struct server * server)
             FATAL ("unable to bind server ichat socket for clients: %s", strerror (errno));
         }
     }
-    
+
+    if (config->s2s_port)
+    {
+        int cli_server_fd = IC_bind_server_socket ("0.0.0.0", config->s2s_port);
+        DEBUG ("binding server socket for ichat s2s clients");
+        if (cli_server_fd > 0)
+        {
+            struct client * cli_server = (struct client *)ichat_s2s_server_create (cli_server_fd);
+            if (!cli_server)
+            {
+                FATAL ("unable to bind ichat server socket for s2s clients");
+                close (cli_server_fd);
+            }
+            else
+            {
+                list_prepend(cli_server, server->clist);
+            }
+        }
+        else
+        {
+            FATAL ("unable to bind server ichat socket for s2s clients: %s", strerror (errno));
+        }
+    }
+
     if (config->ctl_port)
     {
         int ctl_server_fd = IC_bind_server_socket ("127.0.0.1", config->ctl_port);
@@ -362,7 +386,7 @@ server_register_s2s_links (struct server * server)
     struct s2s_block * b = server->config->s2s_queue;
     while (b)
     {
-        if (b->port != -1)
+        if (b->port)
         {
             start_s2s_link (server, b->host, b->port, b->pass);
         }

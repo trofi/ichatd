@@ -84,8 +84,8 @@ config_destroy (struct config * config)
 
 static int is_port (long port)
 {
-    if (port == -1 // closed
-        || (port > 0 && port < 65536)) // 16 bit positive value
+    // 0 - port is closed
+    if (port >= 0 && port < 65536) // 16 bit positive value
         return 1;
     return 0;
 }
