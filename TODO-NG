@@ -25,10 +25,10 @@ milestone N:
 
 
 stuff:
-    * hide client structures to private implementation, define interfaces
+    * hide client structures to private implementation, define interfaces/architecture
 
 thoughts about laziness:
-    * We can share same data, but track different offsets, sizes.
+    * We can share same data, but track different offsets, sizes (buffer struct).
       It's useful to work with packed to one string structures as unpacked.
 
 problems:
