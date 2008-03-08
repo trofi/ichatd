@@ -356,7 +356,6 @@ server_register_s2s_links (struct server * server)
 {
     assert (server);
     // TODO: FIXME: here can be server set to connect to
-    start_s2s_link (server, "192.168.0.3", 6969, "lol");
     return 0;
 }
 
