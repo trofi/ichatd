@@ -332,10 +332,10 @@ parse_config (struct config * config, const char * fname)
         switch (parse_option (config, opt_name, opt_value))
         {
             case OPT_BAD_VAL:
-                fprintf (stderr, "%d: option %s has bad value", line_no, opt_name);
+                fprintf (stderr, "%d: option %s has bad value\n", line_no, opt_name);
                 break;
             case OPT_UNKNOWN:
-                fprintf (stderr, "%d: unknown option %s", line_no, opt_name);
+                fprintf (stderr, "%d: unknown option %s\n", line_no, opt_name);
                 break;
             case OPT_PARSED:
                 // all ok
