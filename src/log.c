@@ -11,8 +11,8 @@
 //-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-=-
 
 static FILE *          log_file  = NULL;
-static enum LOG_LEVEL  log_level = NONE_LEVEL;
-
+static enum LOG_LEVEL  log_level = DEBUG_LEVEL;
+static int log_write_stdout      = 1;
 //#define LOG_MT
 #ifdef LOG_MT
 #include <pthread.h>
@@ -60,6 +60,14 @@ set_log_level (enum LOG_LEVEL level)
     return prev;
 }
 
+int
+log_to_stdout (int whether_to_write)
+{
+    int prev = log_write_stdout;
+    log_write_stdout = whether_to_write;
+    return prev;
+}
+
 void
 close_log (void)
 {
@@ -88,22 +96,26 @@ print2log (enum LOG_LEVEL level, const char * msg, ...)
         ts[strlen (ts) - 1] = 0;
         // write header
         fprintf (log_file, "%s ichatd[%ld]: ", ts, (long)TID);
-        fprintf (stdout,   "%s ichatd[%ld]: ", ts, (long)TID);
+        if (log_write_stdout)
+            fprintf (stdout,   "%s ichatd[%ld]: ", ts, (long)TID);
     
         // print the message
         va_start (arglist, msg);
         {
             vfprintf (log_file, msg, arglist);
-            vfprintf (stdout,   msg, arglist);
+            if (log_write_stdout)
+                vfprintf (stdout, msg, arglist);
         }
         va_end (arglist);
         
         // print the footer
         fputc ('\n', log_file);
-        fputc ('\n',   stdout);
+        if (log_write_stdout)
+            fputc ('\n',   stdout);
         // force log to be updated
         fflush (log_file);
-        fflush (stdout);
+        if (log_write_stdout)
+            fflush (stdout);
     }
     LOG_UNLOCK;
 }

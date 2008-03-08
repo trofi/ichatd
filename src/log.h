@@ -14,6 +14,9 @@ enum LOG_LEVEL {
 int open_log (const char * fname);
 void close_log (void);
 
+// returns pre state
+int log_to_stdout (int whether_to_write);
+
 enum LOG_LEVEL set_log_level (enum LOG_LEVEL level);
 void print2log (enum LOG_LEVEL level, const char * msg, ...);
 
