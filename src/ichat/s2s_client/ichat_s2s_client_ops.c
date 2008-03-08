@@ -56,6 +56,7 @@ ichat_s2s_client_process_message (struct server * server,
     if (!icmsg)
     {
         NOTE ("%s: s2s client[fd=%d] sent malformed message", __func__, client->fd);
+        log_print_array (DEBUG_LEVEL, buffer_data (msg), buffer_size (msg));
         client->corrupt = 1;
         return;
     }
@@ -65,10 +66,8 @@ ichat_s2s_client_process_message (struct server * server,
     {
         buffer_unref (impl->sig);
         impl->sig = sig;
-        // TODO: prettyprint sig
         NOTE ("%s: s2s client[fd=%d] registered with sig:", __func__, client->fd);
         log_print_array (NOTE_LEVEL, buffer_data (sig), buffer_size (sig));
-        
     }
     else
     {
@@ -93,12 +92,38 @@ ichat_s2s_client_process_message (struct server * server,
             impl->is_authenticated = 1;
             NOTE ("s2s client[fd=%d] authenticated. Welcome", client->fd);
         }
+        else
+        {
+            WARN ("s2s client[fd=%d] sent wrong password", client->fd);
+            log_print_array (DEBUG_LEVEL, buffer_data (clnt_msg), buffer_size (clnt_msg));
+        }
     }
     else if (CMD_IS("FORWARD"))
     {
         if (impl->is_authenticated)
         {
-            ichat_dispatch (server, client, clnt_msg);
+            // stripping out message size
+            size_t buf_sz = buffer_size (clnt_msg);
+            char * buf_data = buffer_data (clnt_msg);
+
+            char * zero_pos = memchr (buf_data, '\0', buf_sz);
+            if (zero_pos)
+            {
+                struct buffer * b = buffer_alloc ();
+                size_t new_size = buf_sz - (zero_pos + 1 - buf_data);
+
+                buffer_set_size (b, buf_sz);
+                memcpy (buffer_data (b), zero_pos + 1, new_size);
+
+                ichat_dispatch (server, client, b);
+
+                buffer_unref (b);
+            }
+            else
+            {
+                NOTE ("%s: s2s client[fd=%d] sent malformed FORWARD message. drop it", __func__, client->fd);
+                log_print_array (DEBUG_LEVEL, buffer_data (clnt_msg), buffer_size (clnt_msg));
+            }
         }
         else
         {
@@ -110,7 +135,7 @@ ichat_s2s_client_process_message (struct server * server,
         // TODO: dump exact command
         WARN ("%s: s2s client[fd=%d] sent strange command:", client->fd);
         log_print_array (WARN_LEVEL, buffer_data (cmd), buffer_size (cmd));
-        
+
     }
 #undef CMD_IS
     buffer_unref (cmd);

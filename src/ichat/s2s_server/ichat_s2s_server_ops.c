@@ -46,11 +46,10 @@ ichat_s2s_server_read_op(struct server * server,
         return;
     }
     DEBUG("new client = %d", new_client_fd);
-    struct client * new_client = ichat_s2s_client_create (new_client_fd, IN_AUTH,
-                                 DEF_SERVER_PASSWORD /* FIXME: make it runtime modable */);
+    struct client * new_client = ichat_s2s_client_create (new_client_fd, IN_AUTH, server->config->s2s_password);
     if (!client)
     {
-        WARN ("unable to create client. memory runout");
+        WARN ("unable to create s2s client: %s", strerror (errno));
         close (new_client_fd);
         return;
     }

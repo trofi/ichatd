@@ -18,9 +18,6 @@ struct ics2s {
     const char * command;
     int command_len;
     
-    const char * data_len_field;
-    int data_len_field_len;
-
     const char * msg_data;
     int msg_data_len;
 };
@@ -78,18 +75,6 @@ ichat_buffer_to_ics2s (struct buffer * msg)
 
     b_data = cmd_end + 1;
     b_size -= s2s_msg->command_len + 1; //skip '\0'
-
-    //find data len (dunno who uses that stuff)
-    if (b_size <= 0)
-        goto e_bad_msg;
-    const char * data_len_field_end = memchr (b_data, 0, b_size);
-    if (!data_len_field_end)
-        goto e_bad_msg;
-    s2s_msg->data_len_field = b_data;
-    s2s_msg->data_len_field_len = data_len_field_end - b_data;
-
-    b_data = data_len_field_end + 1;
-    b_size -= s2s_msg->data_len_field_len + 1; //skip '\0'
 
     //store data
     if (b_size < 0)
