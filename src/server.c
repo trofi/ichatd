@@ -342,8 +342,14 @@ server_register_heartbeats (struct server * server)
 static int
 start_s2s_link (struct server * server, const char * host, int port, const char * password)
 {
+    // TODO: register reconnection task at remote server shutdown
     NOTE ("LINK to %s:%d", host, port);
     int remote = IC_nonblock_connect (host, port);
+    if (remote == -1)
+    {
+        WARN ("unable to connect to %s:%d : %s", host, port, strerror (errno));
+        return 0;
+    }
     struct client * client = ichat_s2s_client_create (remote, OUT_AUTH, password);
     server_add_client (server, client);
     return 0;
