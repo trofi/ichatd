@@ -131,7 +131,7 @@ server_configure (struct server * server, int argc, char * argv[])
 enum SERVER_STATUS
 server_add_client(struct server * server, struct client * client)
 {
-    DEBUG("enaueued client[fd=%d]", client->fd);
+    DEBUG("enqueued client[fd=%d]", client->fd);
     list_prepend (client, server->clist);
     return SERVER_OK;
 }
@@ -208,7 +208,6 @@ static enum SERVER_STATUS server_start_dispatcher (struct server * server);
 enum SERVER_STATUS
 server_run (struct server * server)
 {
-
     assert (server);
     //FIXME: handle errors
     server_init_log_subsystem (server);
@@ -220,7 +219,6 @@ server_run (struct server * server)
 
     return SERVER_OK;
 }
-
 
 static int server_cleanup_dispatcher (struct server * server);
 static int server_close_ports (struct server * server);
@@ -384,10 +382,13 @@ static int
 server_detach (struct server * server)
 {
     assert (server);
-    if (!server->config->foreground_mode)
+    if (server->config->foreground_mode)
+    {
+        NOTE ("stay foreground");
         return 0;
+    }
     if (getppid () != 1) // our parent is not init
-    {    
+    {
         int forker;
         struct sigaction sa;
         // ignore some signals...
@@ -397,7 +398,7 @@ server_detach (struct server * server)
         sigaction (SIGTTIN, &sa, NULL);
         sigaction (SIGTTOU, &sa, NULL);
         sigaction (SIGTSTP, &sa, NULL);
-    
+
         // fork returns 0 in the child thread or -1 upon error
         // otherwise it will return PID of new process
         forker = fork ();
