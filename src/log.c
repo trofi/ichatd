@@ -3,6 +3,7 @@
 #include <time.h>
 #include <stdarg.h>
 #include <string.h>
+#include <ctype.h>
 #include <sys/types.h>
 #include <unistd.h>
 
@@ -120,17 +121,62 @@ print2log (enum LOG_LEVEL level, const char * msg, ...)
     LOG_UNLOCK;
 }
 
+static const char hex[] = "0123456789ABCDEF";
+
 void
 log_print_array (enum LOG_LEVEL level, const char * p, unsigned int len)
 {
-    char * q = malloc (len + 1);
+    // worst case - all chars are unprintable (\xXY)
+    // rules: %->%%
+    // all the rest - as is
+    char * q = malloc (len*4 + 1);
     if (!q)
     {
         FATAL("ERROR: no mem to print aray");
         return;
     }
-    q[len] = '\0';
-    memcpy (q, p, len);
+    const char * src = p;
+    char * dst       = q;
+    for (; src < p + len; ++src)
+    {
+        if (*src == '\0')
+	{
+	    *(dst++) = '\\';
+	    *(dst++) = '0';
+	}
+	else if (*src == '%')
+	{
+	    *(dst++) = '%';
+	    *(dst++) = '%';
+	}
+	else if (isprint (*src))
+	{
+	    *(dst++) = *src;
+	}
+        else if (*src == '\r')
+	{
+	    *(dst++) = '\\';
+	    *(dst++) = 'r';
+	}
+        else if (*src == '\n')
+	{
+	    *(dst++) = '\\';
+	    *(dst++) = 'n';
+	}
+        else if (*src == '\t')
+	{
+	    *(dst++) = '\\';
+	    *(dst++) = 't';
+	}
+	else
+	{
+	    *(dst++) = '\\';
+	    *(dst++) = 'x';
+	    *(dst++) = hex[((unsigned char)*src) / 16];
+	    *(dst++) = hex[((unsigned char)*src) % 16];
+	}
+    }
+    *dst = '\0';
     print2log (level, "array(%p) = %s", p, q);
     free (q);
 }
