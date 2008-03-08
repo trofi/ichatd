@@ -355,7 +355,19 @@ static int
 server_register_s2s_links (struct server * server)
 {
     assert (server);
-    // TODO: FIXME: here can be server set to connect to
+    struct s2s_block * b = server->config->s2s_queue;
+    while (b)
+    {
+        if (b->port != -1)
+        {
+            start_s2s_link (server, b->host, b->port, b->pass);
+        }
+        else
+        {
+            NOTE ("not connecting to %s:%d", b->host, b->port);
+        }
+        b = b->next;
+    }
     return 0;
 }
 

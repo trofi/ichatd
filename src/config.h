@@ -25,12 +25,20 @@
     "You've just connected to slyfox's ichatd ctl port!\r\n"    \
     "Go type here something\r\n"
 
+struct s2s_block {
+    struct s2s_block * next;
+    char * host;
+    int port;
+    char * pass;
+};
+
 struct config
 {
     int    foreground_mode;  // to daemonise or not
     int    user_port;        // port for user's connections
     int    ctl_port;         // port to handle server via telnet
     int    s2s_port;         // port for server to server connections
+    char * server_name;      // name for interserver communications
     char * s2s_password;     // password for s2s incoming connections
 
     char * log_file;         // file to store logs to
@@ -40,6 +48,7 @@ struct config
     int    null_clients;     // whether to allow clients to receive data without authentication
     int    max_msg_size;     // max message length in bytes
                              // (messages more than 7KB makes win ichat clents sick)
+    struct s2s_block * s2s_queue; // queue of servers to connect to (our server is initiator)
 };
 
 // parse errors
