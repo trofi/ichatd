@@ -70,7 +70,7 @@ ichat_s2s_client_process_message (struct server * server,
         buffer_unref (impl->sig);
         impl->sig = sig;
         DEBUG ("%s: s2s client[fd=%d] registered with sig:", __func__, client->fd);
-        log_print_array (NOTE_LEVEL, buffer_data (sig), buffer_size (sig));
+        log_print_array (DEBUG_LEVEL, buffer_data (sig), buffer_size (sig));
     }
     else
     {
