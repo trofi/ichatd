@@ -41,14 +41,14 @@ ichat_broadcast (struct server * server,
         switch (clnt->type)
         {
             case ICHAT_CLIENT:
-                DEBUG ("[B:local] sending %p -> %p", client, clnt);
+                DEBUG ("[B:local] sending [fd=%d] -> [fd=%d]", client->fd, clnt->fd);
                 clnt->op.add_message (server, clnt, msg);
                 break;
             case ICHAT_S2S_CLIENT:
                 if (clnt != client
                     && ((struct ichat_s2s_client_impl *)(clnt->impl))->is_authenticated)
                 {
-                    DEBUG ("[B:s2s] sending %p -> %p", client, clnt);
+                    DEBUG ("[B:s2s] sending [fd=%d] -> [fd=%d]", client->fd, clnt->fd);
                     clnt->op.add_message (server, clnt, msg);
                 }
                 break;
@@ -79,7 +79,7 @@ ichat_unicast (struct server * server,
             && ichat_sig_cmp (receiver,
                               ((struct ichat_s2s_client_impl *)(clnt->impl))->sig) == 0)
         {
-            DEBUG ("[U:local] sending %p -> %p", client, clnt);
+            DEBUG ("[U:local] sending [fd=%d] -> [fd=%d]", client->fd, clnt->fd);
             clnt->op.add_message (server, clnt, msg);
 
             locally_delivered = 1;
@@ -97,7 +97,7 @@ ichat_unicast (struct server * server,
             && clnt != client
             && ((struct ichat_s2s_client_impl *)(clnt->impl))->is_authenticated)
         {
-            DEBUG ("[U:s2s] sending %p -> %p", client, clnt);
+            DEBUG ("[U:s2s] sending [fd=%d] -> [fd=%d]", client->fd, clnt->fd);
             clnt->op.add_message (server, clnt, msg);
         }        
     }

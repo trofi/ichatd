@@ -21,7 +21,7 @@ ichat_client_create (int fd)
     client->impl = impl;
     // FIXME: handle memleaks, fdleaks
 
-    DEBUG ("ichat_client %p created [fd=%d]", client, fd);
+    DEBUG ("ichat_client created [fd=%d]", fd);
     return client;
 }
 
@@ -29,7 +29,7 @@ void
 ichat_client_destroy (struct client * client)
 {
     if (!client) return;
-    DEBUG ("ichat_client %p closed", client);
+    DEBUG ("ichat_client closed[fd=%d]", client->fd);
     if (client->impl)
         ichat_client_destroy_impl(client->impl);
     // TODO: broadcast DISCONNECT ichat message

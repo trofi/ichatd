@@ -16,7 +16,7 @@ ctl_server_create (int fd)
     //FIXME: handle memleaks
     client->impl = ctl_server_impl_create ();
     //FIXME: handle memleaks
-    DEBUG ("ctl_server %p created", client);
+    DEBUG ("ctl_server[fd=%d] created", client->fd);
     return client;
 }
 
@@ -24,7 +24,7 @@ void
 ctl_server_destroy (struct client * client)
 {
     if (!client) return;
-    DEBUG ("ctl_server %p closed", client);
+    DEBUG ("ctl_server[fd=%d] closed", client->fd);
     if (client->impl)
         ctl_server_impl_destroy (client->impl);
 }
