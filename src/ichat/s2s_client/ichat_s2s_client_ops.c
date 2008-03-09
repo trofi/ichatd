@@ -62,11 +62,14 @@ ichat_s2s_client_process_message (struct server * server,
     }
 
     struct buffer * sig = ics2s_sender (icmsg);
+    // FIXME: servers don't substitute server names on packet retransmit
+    // so we should not write it to log + we should not mangle server
+    // names and timestamps.
     if (ichat_sig_cmp (sig, impl->sig))
     {
         buffer_unref (impl->sig);
         impl->sig = sig;
-        NOTE ("%s: s2s client[fd=%d] registered with sig:", __func__, client->fd);
+        DEBUG ("%s: s2s client[fd=%d] registered with sig:", __func__, client->fd);
         log_print_array (NOTE_LEVEL, buffer_data (sig), buffer_size (sig));
     }
     else
@@ -209,7 +212,7 @@ ichat_s2s_client_read_op(struct server * server,
             struct buffer * b = buffer_alloc();
             buffer_set_size(b, msg_size);
             memcpy (buffer_data (b), msg_data_start, msg_size);
-            DEBUG ("got message len = %d from client %p", msg_size, client);
+            DEBUG ("got message len = %d from s2s client[fd=%d]", msg_size, client->fd);
             ichat_s2s_client_process_message (server, client, b);
             buffer_unref (b);
         }
