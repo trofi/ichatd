@@ -33,6 +33,7 @@ static void
 buffer_enlarge (struct buffer * b, size_t new_size)
 {
     assert (b);
+    assert (b->rc > 0);
     b->data = realloc (b->data, new_size);
 }
 
@@ -76,6 +77,7 @@ size_t
 buffer_size(const struct buffer * b)
 {
     assert(b);
+    assert (b->rc > 0);
     return b->len;
 }
 
@@ -83,6 +85,7 @@ void
 buffer_set_size(struct buffer * b, size_t new_size)
 {
     assert (b);
+    assert (b->rc > 0);
     if (b->len < new_size)
     {
         size_t old_len = b->len;
@@ -96,6 +99,7 @@ char *
 buffer_data(const struct buffer * b)
 {
     assert(b);
+    assert (b->rc > 0);
     return b->data;
 }
 
@@ -103,6 +107,7 @@ struct buffer *
 buffer_next(struct buffer * b)
 {
     assert (b);
+    assert (b->rc > 0);
     return b->next;
 }
 
@@ -110,6 +115,13 @@ void
 buffer_set_next(struct buffer * b, struct buffer * next_b)
 {
     assert (b);
+    assert (b->rc > 0);
+    assert (next_b);
+    assert (next_b->rc > 0);
+    // avoid passing buffer into many lists
+    assert (b->next == 0);
+    assert (next_b->next == 0);
+
     b->next = next_b;
 }
 
@@ -118,6 +130,7 @@ void
 buffer_reserve(struct buffer * b, size_t new_size)
 {
     assert (b);
+    assert (b->rc > 0);
     if (b->capacity >= new_size)
         return;
     buffer_enlarge (b, new_size);
@@ -127,6 +140,7 @@ ssize_t
 buffer_read (struct buffer * b, int fd, size_t size)
 {
     assert (b);
+    assert (b->rc > 0);
     buffer_reserve (b, b->len + size);
     ssize_t r;
     {
@@ -146,6 +160,7 @@ ssize_t
 buffer_write (struct buffer * b, size_t off,  int fd, size_t size)
 {
     assert (b);
+    assert (b->rc > 0);
     assert (b->len >= off + size);
     ssize_t r;
     {
@@ -234,12 +249,13 @@ buffer_list_write (struct buffer * b_list, size_t off, int fd)
 {
     // TODO: implement ;]
     assert (b_list);
+    assert (fd >=0);
 
     // WARNING: thread unsafe
     struct iovec iov[CONF_IOV_MAX];
     int iov_cnt = CONF_IOV_MAX;
     get_buffer_list_iovec (b_list, iov, &iov_cnt);
-    if (!iov_cnt
+    if (iov_cnt == 0
         || iov[0].iov_len <= off) //out of buffer
         return -1;
 

@@ -224,18 +224,18 @@ ichat_s2s_client_read_op(struct server * server,
 
 static void
 ichat_s2s_client_write_op(struct server * server,
-                      struct client * client)
+                          struct client * client)
 {
     DEBUG (__func__);
     assert (server);
     assert (client);
     struct ichat_s2s_client_impl * impl = client->impl;
     assert (impl);
+    assert (impl->bo);
 
     // if buffer - write buffer part
     // dispatcher, pipe manager
-    if (!impl->bo
-        || buffer_size(impl->bo) == 0)
+    if (buffer_size (impl->bo) == 0)
         return;
 
     ssize_t result = buffer_list_write (impl->bo,
