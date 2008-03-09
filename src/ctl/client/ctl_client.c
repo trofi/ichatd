@@ -1,6 +1,6 @@
 #include <stdlib.h>
 #include <string.h>
-
+#include <assert.h>
 #include "buffer.h"
 #include "config.h"
 
@@ -14,6 +14,7 @@
 struct client *
 ctl_client_create (int fd)
 {
+    assert (fd >= 0);
     struct client * client = client_create (fd, CTL_CLIENT, ctl_client_ops);
     // FIXME: handle memleaks
     struct ctl_client_impl * impl = ctl_client_create_impl();

@@ -32,7 +32,7 @@ struct ops ichat_s2s_server_ops = {
 
 static void
 ichat_s2s_server_read_op(struct server * server,
-                     struct client * client)
+                         struct client * client)
 {
     assert (server);
     assert (client);
@@ -45,8 +45,11 @@ ichat_s2s_server_read_op(struct server * server,
         WARN ("unable to accept client: %s", strerror (errno));
         return;
     }
-    DEBUG("new client = %d", new_client_fd);
-    struct client * new_client = ichat_s2s_client_create (new_client_fd, IN_AUTH, server->config->s2s_password);
+    DEBUG("new s2s client[fd=%d]", new_client_fd);
+    struct client * new_client = ichat_s2s_client_create (new_client_fd,
+                                                          IN_AUTH,
+                                                          server->config->server_name,
+                                                          server->config->s2s_password);
     if (!client)
     {
         WARN ("unable to create s2s client: %s", strerror (errno));
@@ -60,7 +63,7 @@ ichat_s2s_server_read_op(struct server * server,
 
 static void
 ichat_s2s_server_error_op(struct server * server,
-                      struct client * client)
+                          struct client * client)
 {
     assert (server);
     assert (client);
@@ -71,7 +74,7 @@ ichat_s2s_server_error_op(struct server * server,
 
 static int
 ichat_s2s_server_can_read_op(struct server * server,
-                         struct client * client)
+                             struct client * client)
 {
     assert (server);
     assert (client);

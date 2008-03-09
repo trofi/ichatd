@@ -298,7 +298,7 @@ ichat_s2s_client_add_message (struct server * server,
 ///////////////////////////
     // cmd - is [server][timestamp][command]
     // TODO: set dynamic: server_name, timestamp
-    const char * server_name = DEF_SERVER_NAME;
+    const char * server_name = server->config->server_name;
     const char * command = "FORWARD";
 
     size_t cmd_size = strlen (server_name) + 1 + 17 /* timestamp*/ + 1 + strlen (command) + 1 + number_len(msg_size) + 1;

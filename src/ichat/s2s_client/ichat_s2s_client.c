@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 
@@ -12,11 +13,12 @@
 #include "log.h"
 
 struct client *
-ichat_s2s_client_create (int fd, enum AUTH_DIR auth_dir, const char * password)
+ichat_s2s_client_create (int fd, enum AUTH_DIR auth_dir, const char * my_name, const char * password)
 {
+    assert (fd >= 0);
     struct client * client = client_create (fd, ICHAT_S2S_CLIENT, ichat_s2s_client_ops);
     // FIXME: handle memleaks, fdleaks
-    struct ichat_s2s_client_impl * impl = ichat_s2s_client_create_impl (auth_dir, password);
+    struct ichat_s2s_client_impl * impl = ichat_s2s_client_create_impl (auth_dir, my_name, password);
     client->impl = impl;
     // FIXME: handle memleaks, fdleaks
 

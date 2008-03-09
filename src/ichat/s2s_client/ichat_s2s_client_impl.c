@@ -8,7 +8,7 @@
 #include "ichat/proto/ics2s.h"
 
 struct ichat_s2s_client_impl *
-ichat_s2s_client_create_impl (enum AUTH_DIR auth_dir, const char * password)
+ichat_s2s_client_create_impl (enum AUTH_DIR auth_dir, const char * my_name, const char * password)
 {
     struct ichat_s2s_client_impl * impl = (struct ichat_s2s_client_impl *)malloc (sizeof (struct ichat_s2s_client_impl));
     if (!impl)
@@ -27,6 +27,9 @@ ichat_s2s_client_create_impl (enum AUTH_DIR auth_dir, const char * password)
     if (!impl->sig)
         goto e_no_mem;
 
+    if (!(impl->my_name = strdup (my_name)))
+        goto e_no_mem;
+
     if (!(impl->password = strdup (password)))
         goto e_no_mem;
 
@@ -43,8 +46,7 @@ ichat_s2s_client_create_impl (enum AUTH_DIR auth_dir, const char * password)
             // TODO: FIXME: stop these hacks with buffers
             //              implement normal data send interface
             //              check for memleaks
-#include "config.h"
-            struct buffer * b = s2s_make_login_msg (DEF_SERVER_NAME, password);
+            struct buffer * b = s2s_make_login_msg (my_name, password);
             buffer_unref (impl->bo);
             impl->bo = b;
             impl->is_authenticated = 1;
@@ -73,4 +75,5 @@ ichat_s2s_client_destroy_impl (struct ichat_s2s_client_impl * impl)
     if (impl->sig)
         buffer_unref(impl->sig);
     free ((char*)impl->password);
+    free ((char*)impl->my_name);
 }
