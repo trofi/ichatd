@@ -1,10 +1,36 @@
 TARGET  = ichatd
 
 # features:
-# LINUX_PPOLL (unimpl ;])
+# mudflap=1
+# debug=1
+# noopt=1
+#
+# example: make debug=1 mudflap=1
 
-CFLAGS  += -MMD -W -Wall -Werror -g -O0 -Isrc -fmudflap # -DLINUX_PPOLL
-LIBS    += -lmudflap
+CFLAGS  += -MMD -W -Wall -Werror -Isrc
+
+ifdef mudflap
+    CFLAGS  += -fmudflap
+    LDFLAGS += -lmudflap
+endif
+
+ifdef debug
+    CFLAGS   += -g
+    LDFLAGS  += -g
+else
+    CFLAGS   += -s
+    LDFLAGS  += -s
+endif
+
+ifdef noopt
+    CFLAGS   += -O0
+    LDFLAGS  += -O0
+else
+    CFLAGS   += -O2
+    LDFLAGS  += -O2
+endif
+
+####################################################
 
 SRC     := $(wildcard src/*.c src/*/*.c src/*/*/*.c)
 HDR     := $(wildcard src/*.h src/*/*.h src/*/*/*.h)
@@ -14,7 +40,7 @@ OBJS    := $(SRC:src/%.c=obj/%.o)
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	@$(CC) $(CFLAGS) $^ -o $@ $(LIBS)
+	@$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 	@echo "[LD] $@"
 
 obj/%.o: src/%.c
