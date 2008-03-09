@@ -374,7 +374,7 @@ start_s2s_link (struct server * server, const char * host, int port, const char 
         WARN ("unable to connect to %s:%d : %s", host, port, strerror (errno));
         return 0;
     }
-    struct client * client = ichat_s2s_client_create (remote, OUT_AUTH, password);
+    struct client * client = ichat_s2s_client_create (remote, OUT_AUTH, server->config->server_name, password);
     server_add_client (server, client);
     return 0;
 }

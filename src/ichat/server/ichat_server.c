@@ -1,4 +1,4 @@
-
+#include <assert.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -12,6 +12,7 @@
 struct client *
 ichat_server_create (int fd)
 {
+    assert (fd >= 0);
     struct client * client = client_create (fd, ICHAT_SERVER, ichat_server_ops);
     //FIXME: handle memleaks
     client->impl = ichat_server_impl_create ();
