@@ -17,7 +17,7 @@ ichat_server_create (int fd)
     //FIXME: handle memleaks
     client->impl = ichat_server_impl_create ();
     //FIXME: handle memleaks
-    DEBUG ("ichat_server %p created", client);
+    DEBUG ("ichat_server created [fd=%d]", fd);
     return client;
 }
 
@@ -25,7 +25,7 @@ void
 ichat_server_destroy (struct client * client)
 {
     if (!client) return;
-    DEBUG ("ichat_server %p closed", client);
+    DEBUG ("ichat_server closed [fd=%d]", client->fd);
     if (client->impl)
         ichat_server_impl_destroy (client->impl);
 }

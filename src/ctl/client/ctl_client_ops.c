@@ -42,7 +42,7 @@ ctl_client_process_message(struct server * server,
     assert (client);
     assert (msg);
 
-    DEBUG("client %p processes data: [LEN = %d]", client, buffer_size (msg));
+    DEBUG("client[fd=%d] processes data: [LEN = %d]", client->fd, buffer_size (msg));
     log_print_array (DEBUG_LEVEL, buffer_data (msg), buffer_size (msg));
 
     const char * data = buffer_data (msg);
@@ -99,7 +99,7 @@ ctl_client_read_op(struct server * server,
     switch (result)
     {
         case -1:
-            NOTE ("ctl client %p read error (%s)", client, strerror (errno));
+            NOTE ("ctl client[fd=%d] read error: %s", client->fd, strerror (errno));
         case  0:
             client->corrupt = 1;
             return;
@@ -153,7 +153,7 @@ ctl_client_write_op(struct server * server,
     switch (result)
     {
         case -1:
-            NOTE ("ctl client %p write error (%s)", client, strerror (errno));
+            NOTE ("ctl client[fd=%d] write error: %s", client->fd, strerror (errno));
         case  0:
             client->corrupt = 1;
             return;

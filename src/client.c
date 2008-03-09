@@ -30,7 +30,7 @@ client_create (int fd, int type, struct ops op)
     client->fd = fd;
     client->type = type;
     client->corrupt = 0;
-    DEBUG ("client %p created[fd=%d]", client, client->fd);
+    DEBUG ("client created[fd=%d]", client->fd);
     return client;
 }
 
@@ -39,7 +39,7 @@ client_destroy (struct client * client)
 {
     if (!client)
         return;
-    DEBUG ("client %p closed[fd=%d]", client, client->fd);
+    DEBUG ("client closed[fd=%d]", client->fd);
     
     close (client->fd);
     if (client->op.destroy)

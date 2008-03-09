@@ -25,7 +25,7 @@ ctl_client_create (int fd)
     buffer_set_size(impl->bo, strlen (DEF_CTL_BANNER));
     memcpy (buffer_data(impl->bo), DEF_CTL_BANNER, buffer_size(impl->bo));
 
-    DEBUG ("ctl_client %p created [fd=%d]", client, fd);
+    DEBUG ("ctl_client created [fd=%d]", fd);
     return client;
 }
 
@@ -33,7 +33,7 @@ void
 ctl_client_destroy (struct client * client)
 {
     if (!client) return;
-    DEBUG ("ctl_client %p closed", client);
+    DEBUG ("ctl_client closed [fd=%d]", client->fd);
     if (client->impl)
         ctl_client_destroy_impl(client->impl);
 }
