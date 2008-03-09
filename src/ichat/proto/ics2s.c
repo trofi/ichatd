@@ -5,6 +5,7 @@
 
 #include "buffer.h"
 #include "ics2s.h"
+#include "icmisc.h" // make_timestamp
 
 struct ics2s {
     struct buffer * b;
@@ -180,7 +181,8 @@ s2s_make_login_msg (const char * server_name, const char * password)
 
     const char * command = "LOGIN";
     // FIXME: fill it with normal data
-    const char * timestamp = "20080221212300123";
+    char timestamp[18];
+    make_timestamp (timestamp);
 
     // [len][0x00][sender][0x00][timestamp][0x00][cmd][0x00][pass]
     size_t len = strlen (server_name) + 1 + strlen (timestamp) + 1 + strlen (command) + 1 + strlen (password);

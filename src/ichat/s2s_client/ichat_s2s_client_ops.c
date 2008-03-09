@@ -304,8 +304,12 @@ ichat_s2s_client_add_message (struct server * server,
     size_t cmd_size = strlen (server_name) + 1 + 17 /* timestamp*/ + 1 + strlen (command) + 1 + number_len(msg_size) + 1;
     struct buffer * cmd    = buffer_alloc ();
     buffer_set_size (cmd, cmd_size);
+
+    char timestamp[18];
+
+    make_timestamp (timestamp);
     snprintf (buffer_data (cmd), cmd_size,
-              "%s%c%s%c%s%c%d", server_name, '\0', "20080221212300123", '\0', command, '\0', msg_size);
+              "%s%c%s%c%s%c%d", server_name, '\0', timestamp, '\0', command, '\0', msg_size);
     buffer_set_size (cmd, cmd_size);
     buffer_set_next (cmd, buffer_ref (msg));
         

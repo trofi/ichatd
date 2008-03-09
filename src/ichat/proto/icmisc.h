@@ -14,6 +14,12 @@ enum {
 // proper place for them. When I'll do find -
 // this file will be deleted.
 
+//
+// takes at least 18 bytes long buffer and fills
+// it by string: YYYYMMDDHHmmssuuu\0
+//
+const char * make_timestamp (char * in_buff);
+
 struct buffer;
 
 // strcmp/memcmp alike
