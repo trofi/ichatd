@@ -120,7 +120,7 @@ buffer_set_next(struct buffer * b, struct buffer * next_b)
     assert (next_b->rc > 0);
     // avoid passing buffer into many lists
     assert (b->next == 0);
-    assert (next_b->next == 0);
+    //assert (next_b->next == 0);
 
     b->next = next_b;
 }
