@@ -1,5 +1,6 @@
 #include <sys/types.h>
 #include <sys/socket.h>
+#include <arpa/inet.h>
 #include <errno.h>
 #include <string.h>
 #include <unistd.h>
@@ -54,7 +55,12 @@ ichat_server_read_op(struct server * server,
     }
     DEBUG("adding new client to list");
     server_add_client (server, new_client);
-    NOTE("client connected");
+
+    struct sockaddr_in sa;
+    socklen_t l = sizeof (struct sockaddr_in);
+    getpeername (new_client_fd, (struct sockaddr *)&sa, &l);
+
+    NOTE("ichat client[fd=%d] connected (%s)", new_client_fd, inet_ntoa (sa.sin_addr));
 }
 
 static void
