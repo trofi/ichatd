@@ -189,7 +189,7 @@ s2s_make_login_msg (const char * server_name, const char * password)
     size_t full_len = number_len (len) + 1 + len;
     buffer_set_size (b, full_len + 1); // +1 of '\0'
     snprintf (buffer_data (b), full_len + 1,
-              "%d%c%s%c%s%c%s%c%s",
+              "%zu%c%s%c%s%c%s%c%s",
                 len, '\0',
                     server_name, '\0',
                         timestamp, '\0',

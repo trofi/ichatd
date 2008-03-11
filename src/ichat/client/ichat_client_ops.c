@@ -248,7 +248,7 @@ ichat_client_add_message (struct server * server,
 
     size_t msg_head_size = number_len (new_msg_size) + 1; // + '\0'
     buffer_set_size (msg_head, msg_head_size);
-    sprintf (buffer_data (msg_head), "%d", new_msg_size);
+    sprintf (buffer_data (msg_head), "%zu", new_msg_size);
  
     buffer_set_next (msg_head, cmd);
 

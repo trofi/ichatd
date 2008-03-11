@@ -312,7 +312,7 @@ ichat_s2s_client_add_message (struct server * server,
 
     make_timestamp (timestamp);
     snprintf (buffer_data (cmd), cmd_size,
-              "%s%c%s%c%s%c%d", server_name, '\0', timestamp, '\0', command, '\0', msg_size);
+              "%s%c%s%c%s%c%zu", server_name, '\0', timestamp, '\0', command, '\0', msg_size);
     buffer_set_size (cmd, cmd_size);
     buffer_set_next (cmd, buffer_ref (msg));
         
@@ -323,7 +323,7 @@ ichat_s2s_client_add_message (struct server * server,
 
     size_t msg_head_size = number_len (new_msg_size) + 1; // + '\0'
     buffer_set_size (msg_head, msg_head_size);
-    sprintf (buffer_data (msg_head), "%d", new_msg_size);
+    sprintf (buffer_data (msg_head), "%zu", new_msg_size);
  
     buffer_set_next (msg_head, cmd);
 
