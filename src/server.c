@@ -339,22 +339,17 @@ server_bind_ports (struct server * server)
 static void
 heartbeat (void * data)
 {
-    struct server ** server = data;
+    struct server * server = data;
     NOTE ("-- HEARTBEAT --");
     // reregister event
-    server_register_heartbeats (*server);
+    server_register_heartbeats (server);
 }
 
 static int
 server_register_heartbeats (struct server * server)
 {
-    // hack for free() in dtor of tack
-    // TODO: rework destructor interface
-
-    struct server ** data = malloc (sizeof(struct server *));
-    *data = server;
     // 5 min
-    struct timed_task * task = task_create (1000 * 5 * 60, heartbeat, data);
+    struct timed_task * task = task_create (1000 * 5 * 60, heartbeat, NULL, server);
     server_add_task (server, task);
     return 0;
 }
@@ -364,17 +359,17 @@ server_register_heartbeats (struct server * server)
 #include "ichat/s2s_client/ichat_s2s_client.h"
 
 static int
-start_s2s_link (struct server * server, const char * host, int port, const char * password)
+start_s2s_link (struct server * server, struct s2s_block * b)
 {
     // TODO: register reconnection task at remote server shutdown
-    NOTE ("LINK to %s:%d", host, port);
-    int remote = IC_nonblock_connect (host, port);
+    NOTE ("LINK to %s:%d", b->host, b->port);
+    int remote = IC_nonblock_connect (b->host, b->port);
     if (remote == -1)
     {
-        WARN ("unable to connect to %s:%d : %s", host, port, strerror (errno));
+        WARN ("unable to connect to %s:%d : %s", b->host, b->port, strerror (errno));
         return 0;
     }
-    struct client * client = ichat_s2s_client_create (remote, OUT_AUTH, server->config->server_name, password);
+    struct client * client = ichat_s2s_client_create (remote, OUT_AUTH, server->config->server_name, b->pass);
     server_add_client (server, client);
     return 0;
 }
@@ -388,7 +383,7 @@ server_register_s2s_links (struct server * server)
     {
         if (b->port)
         {
-            start_s2s_link (server, b->host, b->port, b->pass);
+            start_s2s_link (server, b);
         }
         else
         {
