@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "config.h"
+#include "debug.h"
 #include "log.h"
 
 static struct s2s_block *
@@ -112,6 +113,7 @@ parse_bool (const char * value)
 static struct s2s_block *
 parse_s2s (char * value)
 {
+    CONFIG_DEBUG("%s: value=<%s>", __func__, value);
     struct s2s_block * s2s_b = s2s_block_alloc();
     if (!s2s_b)
         goto e_no_mem;
@@ -123,19 +125,24 @@ parse_s2s (char * value)
         goto e_bad_value;
 
     *ip_end = '\0';
+    CONFIG_DEBUG("%s: ip=<%s>", __func__, ip);
     char * port = ip_end + 1;
     while (*port == ' ' && *port == '\t') ++port;
     if (*port == '\0')
         goto  e_bad_value;
     char * port_end = port;
     while (*port_end && *port_end != ' ' && *port_end != '\t') ++port_end;
-    if (*port_end == '\0')
-        goto e_bad_value;
+
+    // accept passwordless blocks
+    //if (*port_end == '\0')
+    //    goto e_bad_value;
 
     *port_end = '\0';
+    CONFIG_DEBUG("%s: port=<%s>", __func__, port);
     char * pass = port_end + 1;
     while (*pass == ' ' && *pass == '\t') ++pass;
 
+    CONFIG_DEBUG("%s: pass=<%s>", __func__, pass);
     // store parsed values
 
     int port_num = strtol (port, NULL, 10);
@@ -148,11 +155,16 @@ parse_s2s (char * value)
     if (!(s2s_b->pass = strdup (pass)))
         goto e_bad_value;
 
+    CONFIG_DEBUG("%s: s2s_b->host=<%s>", __func__, s2s_b->host);
+    CONFIG_DEBUG("%s: s2s_b->port=<%d>", __func__, s2s_b->port);
+    CONFIG_DEBUG("%s: s2s_b->pass=<%s>", __func__, s2s_b->pass);
+
     return s2s_b;
 
   e_bad_value:
     s2s_block_destroy (s2s_b);
   e_no_mem:
+    CONFIG_DEBUG("%s: parse error", __func__);
     return 0;
 }
 
@@ -168,6 +180,7 @@ parse_option (struct config * config, const char * name, char * value)
     assert (config);
     assert (name);
     assert (value);
+    CONFIG_DEBUG("%s: name=<%s>: value=<%s>", __func__, name, value);
 #define OPT_IS_A(opt) (strcmp (name, opt) == 0)
 #define VAL_IS_A(opt) (strcmp (value, opt) == 0)
 
@@ -325,7 +338,6 @@ parse_config (struct config * config, const char * fname)
 
         // separate name from value by '\0'
         if (*opt_value) *(opt_value++) = '\0';
-
         // skip spaces
         while (*opt_value && (*opt_value == ' ' || *opt_value == '\t')) ++opt_value;
 

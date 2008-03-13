@@ -41,7 +41,7 @@ server_alloc (void)
     if (!server)
         goto e_no_mem;
     memset (server, 0, sizeof (struct server));
-    
+
     if (!(server->config = config_alloc ()))
         goto e_no_mem;
     if (!(server->config_filename = strdup (DEF_CONFIG_FILE)))

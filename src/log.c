@@ -99,16 +99,19 @@ print2log (enum LOG_LEVEL level, const char * msg, ...)
         fprintf (log_file, "%s ichatd[%ld]: ", ts, (long)TID);
         if (log_write_stdout)
             fprintf (stdout,   "%s ichatd[%ld]: ", ts, (long)TID);
-    
+
         // print the message
         va_start (arglist, msg);
-        {
-            vfprintf (log_file, msg, arglist);
-            if (log_write_stdout)
-                vfprintf (stdout, msg, arglist);
-        }
+        vfprintf (log_file, msg, arglist);
         va_end (arglist);
-        
+
+        if (log_write_stdout)
+        {
+            va_start (arglist, msg);
+            vfprintf (stdout, msg, arglist);
+            va_end (arglist);
+        }
+
         // print the footer
         fputc ('\n', log_file);
         if (log_write_stdout)
