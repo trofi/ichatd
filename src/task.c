@@ -25,12 +25,16 @@ task_create (long long delta, TASK_FUN fun, TASK_DTOR_FUN dtor, void * data)
     return task;
 }
 
-void
+static void
 task_destroy (struct timed_task * task)
 {
     if (!task)
         return;
-    free (task->data);
+
+    // user supplied dtor
+    if (task->dtor)
+        task->dtor (task->data);
+
     free (task);
 }
 
@@ -41,5 +45,5 @@ task_run (struct timed_task * task)
     assert (task->fun);
 
     task->fun (task->data);
-    if (task->dtor) task->dtor (task->data);
+    task_destroy (task);
 }
