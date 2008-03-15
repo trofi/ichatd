@@ -25,7 +25,7 @@ server_poll (struct server * server)
     for (;;)
     {
         // TODO: add array of pointers to client structs (fast search, if we need 'em)
-        // TODO: perf lossy cycle
+        // TODO: remove this perf lossy cycle
         // TODO: redo lame stupid structure
         // TODO: all these loops are iterating
         //       thru all clients - it's not acceptable
@@ -56,6 +56,8 @@ server_poll (struct server * server)
     POLL_DEBUG ("%s: fill", __func__);
     list_for_each(clnt, server->clist)
     {
+        assert (clnt->fd >= 0);
+
         int is_set = 0;
         if (clnt->op.can_read
             && clnt->op.can_read(server, clnt)
@@ -88,19 +90,19 @@ server_poll (struct server * server)
     struct timeval tv = { 0, 0 };
     struct timeval * ptv = NULL;
     
-    if (server->task) // yet tasks, which can be timed out
+    if (server->task_queue) // yet tasks, which can be timed out
     {
         ptv = &tv;
-        long long curr  = GetTimerMS();
-        long long sched = server->task->time;
+        unsigned long long curr  = GetTimerMS();
+        unsigned long long sched = server->task_queue->time;
         if (sched <= curr)
         {
-            POLL_DEBUG ("%s: we are here: late = %d us", __func__, (long)(curr - sched)*1000);
+            POLL_DEBUG ("%s: we are here: late = %d ms", __func__, (long)(curr - sched));
             tv.tv_usec = 10 * 1000; // let's wait a little (10ms)
         }
         else
         {
-            POLL_DEBUG ("%s: set timeout to %ld us", __func__, (long)((sched - curr)*1000));
+            POLL_DEBUG ("%s: set timeout to %ld ms", __func__, (long)(sched - curr));
             tv.tv_usec = (sched - curr)*1000; // TODO: explicit check
         }
     }
@@ -132,8 +134,8 @@ server_poll (struct server * server)
         }
     }
     POLL_DEBUG ("%s: timeouts check", __func__);
-    while (server->task
-            && server->task->time <= GetTimerMS())
+    while (server->task_queue
+            && server->task_queue->time <= GetTimerMS())
     {
         struct timed_task * task = server_pop_task (server);
 

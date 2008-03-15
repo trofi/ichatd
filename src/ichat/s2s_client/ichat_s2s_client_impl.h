@@ -8,7 +8,7 @@
 struct buffer;
 struct ichat_s2s_client_impl;
 
-struct ichat_s2s_client_impl * ichat_s2s_client_create_impl (enum AUTH_DIR auth_dir, const char * my_name, const char * password);
+struct ichat_s2s_client_impl * ichat_s2s_client_create_impl (enum AUTH_DIR auth_dir, const char * my_name, const struct s2s_block * b);
 void ichat_s2s_client_destroy_impl (struct ichat_s2s_client_impl * impl);
 
 struct ichat_s2s_client_impl
@@ -23,7 +23,8 @@ struct ichat_s2s_client_impl
     enum AUTH_DIR auth_dir;
     int is_authenticated; // whether to interop with this client
     const char * my_name; // our server id
-    const char * password;// shared secret
+
+    const struct s2s_block * link_block;
 };
 
 #endif // __ICHAT_S2S_CLIENT_IMPL_H__

@@ -48,8 +48,8 @@ ichat_s2s_server_read_op(struct server * server,
     DEBUG("new s2s client[fd=%d]", new_client_fd);
     struct client * new_client = ichat_s2s_client_create (new_client_fd,
                                                           IN_AUTH,
-                                                          server->config->server_name,
-                                                          server->config->s2s_password);
+                                                          server->config->s2s_me->host,
+                                                          server->config->s2s_me);
     if (!client)
     {
         WARN ("unable to create s2s client: %s", strerror (errno));

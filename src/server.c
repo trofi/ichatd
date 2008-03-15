@@ -160,35 +160,44 @@ server_remove_client(struct server * server, struct client * client)
 enum SERVER_STATUS
 server_add_task (struct server * server, struct timed_task * task)
 {
-    if (!server->task ||
-        task->time < server->task->time)
+    if (!server->task_queue)
     {
-        task->next = server->task;
-        server->task = task;
+        server->task_queue = task;
         return SERVER_OK;
     }
 
-    struct timed_task * prev = server->task;
-    // find place to drop in task
-    while (prev->next
-           && prev->next->time < task->time)
-        prev = prev->next;
+    // iterate thru places
+    struct timed_task ** pt = &server->task_queue;
+    while ((*pt)->next
+           &&(*pt)->next->time < task->time)
+    {
+        pt = &(*pt)->next;
+    }
 
-    // insert right after prev
-    task->next = prev->next;
-    prev->next = task->next;
+    if ((*pt)->time < task->time)
+    {
+        task->next = (*pt)->next;
+        (*pt)->next = task;
+    }
+    else
+    {
+        task->next = *pt;
+        (*pt) = task;
+    }
+
     return SERVER_OK;
 }
 
 struct timed_task *
 server_pop_task (struct server * server)
 {
-    if (!server->task)
-        return SERVER_OK;
-    struct timed_task * prev = server->task;
+    if (!server->task_queue)
+        return 0;
+    struct timed_task * head = server->task_queue;
 
-    server->task = prev->next;
-    return prev;
+    // advance
+    server->task_queue = head->next;
+    return head;
 }
 
 const char *
@@ -288,9 +297,9 @@ server_bind_ports (struct server * server)
         }
     }
 
-    if (config->s2s_port)
+    if (config->s2s_me->port)
     {
-        int cli_server_fd = IC_bind_server_socket ("0.0.0.0", config->s2s_port);
+        int cli_server_fd = IC_bind_server_socket ("0.0.0.0", config->s2s_me->port);
         DEBUG ("binding server socket for ichat s2s clients");
         if (cli_server_fd > 0)
         {
@@ -349,30 +358,14 @@ static int
 server_register_heartbeats (struct server * server)
 {
     // 5 min
-    struct timed_task * task = task_create (1000 * 5 * 60, heartbeat, NULL, server);
+    struct timed_task * task = task_create (1000 * S2S_HEARTBEAT_DELTA, heartbeat, NULL, server);
     server_add_task (server, task);
     return 0;
 }
 
 ////////////////
 
-#include "ichat/s2s_client/ichat_s2s_client.h"
-
-static int
-start_s2s_link (struct server * server, struct s2s_block * b)
-{
-    // TODO: register reconnection task at remote server shutdown
-    NOTE ("LINK to %s:%d", b->host, b->port);
-    int remote = IC_nonblock_connect (b->host, b->port);
-    if (remote == -1)
-    {
-        WARN ("unable to connect to %s:%d : %s", b->host, b->port, strerror (errno));
-        return 0;
-    }
-    struct client * client = ichat_s2s_client_create (remote, OUT_AUTH, server->config->server_name, b->pass);
-    server_add_client (server, client);
-    return 0;
-}
+#include "ichat/s2s_client/ichat_s2s_link.h"
 
 static int
 server_register_s2s_links (struct server * server)
@@ -383,7 +376,9 @@ server_register_s2s_links (struct server * server)
     {
         if (b->port)
         {
-            start_s2s_link (server, b);
+            // late init
+            b->server = server;
+            start_ichat_s2s_link (b);
         }
         else
         {

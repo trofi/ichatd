@@ -97,7 +97,7 @@ size_t number_len (size_t number)
     return 1 + number_len (number / 10);
 }
 
-long long
+unsigned long long
 GetTimerMS(void)
 {
     struct timeval tv;

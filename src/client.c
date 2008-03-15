@@ -29,7 +29,7 @@ client_create (int fd, int type, struct ops op)
     client->op = op;
     client->fd = fd;
     client->type = type;
-    client->corrupt = 0;
+    client->corrupt = (fd == -1);
     DEBUG ("client created[fd=%d]", client->fd);
     return client;
 }

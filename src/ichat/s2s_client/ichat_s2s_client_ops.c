@@ -87,7 +87,7 @@ ichat_s2s_client_process_message (struct server * server,
         // TODO: make a delay/cpu load not to bruteforce passes
 
         // here clnt msg means sent password
-        const char * real_pass = server->config->s2s_password;
+        const char * real_pass = server->config->s2s_me->pass;
         size_t real_pass_len = strlen (real_pass);
         if (buffer_size (clnt_msg) == real_pass_len
             && memcmp (buffer_data (clnt_msg), real_pass, real_pass_len) == 0)
@@ -300,11 +300,12 @@ ichat_s2s_client_add_message (struct server * server,
 
 ///////////////////////////
     // cmd - is [server][timestamp][command]
-    // TODO: set dynamic: server_name, timestamp
-    const char * server_name = server->config->server_name;
+    // FIXME: we must not substitute remote server's name with our
+    // TODO: change chat message represettation to s2s (to keep orig server's name)
+    const char * my_name = server->config->s2s_me->host;
     const char * command = "FORWARD";
 
-    size_t cmd_size = strlen (server_name) + 1 + 17 /* timestamp*/ + 1 + strlen (command) + 1 + number_len(msg_size) + 1;
+    size_t cmd_size = strlen (my_name) + 1 + 17 /* timestamp*/ + 1 + strlen (command) + 1 + number_len(msg_size) + 1;
     struct buffer * cmd    = buffer_alloc ();
     buffer_set_size (cmd, cmd_size);
 
@@ -312,7 +313,7 @@ ichat_s2s_client_add_message (struct server * server,
 
     make_timestamp (timestamp);
     snprintf (buffer_data (cmd), cmd_size,
-              "%s%c%s%c%s%c%zu", server_name, '\0', timestamp, '\0', command, '\0', msg_size);
+              "%s%c%s%c%s%c%zu", my_name, '\0', timestamp, '\0', command, '\0', msg_size);
     buffer_set_size (cmd, cmd_size);
     buffer_set_next (cmd, buffer_ref (msg));
         

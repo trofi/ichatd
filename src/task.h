@@ -12,7 +12,7 @@ void task_run (struct timed_task * task);
 
 struct timed_task {
     struct timed_task * next;
-    long long time;   // time is stored in GetTimerMS format
+    unsigned long long time;   // time is stored in GetTimerMS() format
     TASK_FUN fun;
     TASK_DTOR_FUN dtor;
     void * data;

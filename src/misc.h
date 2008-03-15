@@ -28,6 +28,6 @@ int IC_bind_server_socket (const char * laddr, int port);
 int IC_nonblock_connect (const char * raddr, int port);
 
 // time stuff
-long long GetTimerMS(void);
+unsigned long long GetTimerMS(void);
 
 #endif // __MISC_H__

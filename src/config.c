@@ -39,19 +39,22 @@ config_alloc (void)
     config->foreground_mode = 0;
     config->user_port       = DEF_USER_PORT;
     config->ctl_port        = DEF_CONTROL_PORT;
-    config->s2s_port        = DEF_S2S_PORT;
-
-
-    if (!(config->server_name  = (char *)strdup ((const char *)DEF_SERVER_NAME)))
-        goto e_no_mem;
-    if (!(config->s2s_password  = (char *)strdup ((const char *)DEF_SERVER_PASSWORD)))
-        goto e_no_mem;
     
     if (!(config->log_file  = (char *)strdup ((const char *)DEF_LOG_FILE)))
         goto e_no_mem;
-    config->log_level       = NOTE_LEVEL;
     if (!(config->pid_file  = strdup (DEF_PID_FILE)))
         goto e_no_mem;
+
+    if (!(config->s2s_me  = s2s_block_alloc()))
+        goto e_no_mem;
+
+    if (!(config->s2s_me->host  = (char *)strdup ((const char *)DEF_SERVER_NAME)))
+        goto e_no_mem;
+    if (!(config->s2s_me->pass  = (char *)strdup ((const char *)DEF_SERVER_PASSWORD)))
+        goto e_no_mem;
+    config->s2s_me->port = DEF_S2S_PORT;
+
+    config->log_level       = NOTE_LEVEL;
     config->null_clients    = 1;
     config->max_msg_size    = 8192;
 
@@ -70,8 +73,8 @@ config_destroy (struct config * config)
 
     free (config->log_file);
     free (config->pid_file);
-    free (config->server_name);
-    free (config->s2s_password);
+    s2s_block_destroy (config->s2s_me);
+
     struct s2s_block * b = config->s2s_queue;
     struct s2s_block * b_next = 0;
     while (b)
@@ -201,7 +204,7 @@ parse_option (struct config * config, const char * name, char * value)
         int port = strtol (value, NULL, 10);
         if (is_port (port))
         {
-            config->s2s_port = port;
+            config->s2s_me->port = port;
             return OPT_PARSED;
         }
         return OPT_BAD_VAL;
@@ -220,15 +223,15 @@ parse_option (struct config * config, const char * name, char * value)
 
     if (OPT_IS_A("servername")) // servername [name]
     {
-        free (config->server_name);
-        config->server_name = strdup (value);
+        free (config->s2s_me->host);
+        config->s2s_me->host = strdup (value);
         return OPT_PARSED;
     }
 
     if (OPT_IS_A("serverpassword")) // serverpassword [pass]
     {
-        free (config->s2s_password);
-        config->s2s_password = strdup (value);
+        free (config->s2s_me->pass);
+        config->s2s_me->pass = strdup (value);
         return OPT_PARSED;
     }
 

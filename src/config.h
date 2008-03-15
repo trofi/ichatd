@@ -19,17 +19,24 @@
 #define DEF_SERVER_NAME         "slyfox's ichatd"
 #define DEF_SERVER_PASSWORD     "hello world"
 
+// values in seconds
+#define S2S_RECONNECT_DELTA      30
+#define S2S_HEARTBEAT_DELTA      (5*60)
+
 // \r\n for telnet compat
 #define DEF_CTL_BANNER                                          \
     "Hi!\r\n"                                                   \
     "You've just connected to slyfox's ichatd ctl port!\r\n"    \
     "Go type here something\r\n"
 
+struct server;
+
 struct s2s_block {
     struct s2s_block * next;
     char * host;
     int port;
     char * pass;
+    struct server * server;
 };
 
 struct config
@@ -37,9 +44,6 @@ struct config
     int    foreground_mode;  // to daemonise or not
     int    user_port;        // port for user's connections
     int    ctl_port;         // port to handle server via telnet
-    int    s2s_port;         // port for server to server connections
-    char * server_name;      // name for interserver communications
-    char * s2s_password;     // password for s2s incoming connections
 
     char * log_file;         // file to store logs to
 
@@ -49,6 +53,7 @@ struct config
     int    max_msg_size;     // max message length in bytes
                              // (messages more than 7KB makes win ichat clents sick)
     struct s2s_block * s2s_queue; // queue of servers to connect to (our server is initiator)
+    struct s2s_block * s2s_me; // server description
 };
 
 // parse errors

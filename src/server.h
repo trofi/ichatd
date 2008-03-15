@@ -38,7 +38,8 @@ struct server
     char * config_filename;  // current config file name
     struct config * config;
     struct client * clist;   // list of clients
-    struct timed_task * task;   // list of scheduled tasks
+    struct timed_task * task_queue;
+    int    shutdown;          // bool var. whether server is in shutdown state
 };
 
 #endif // __SERVER_H__

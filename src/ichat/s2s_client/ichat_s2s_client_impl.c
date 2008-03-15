@@ -2,13 +2,14 @@
 #include <string.h>
 
 #include "buffer.h"
+#include "config.h"
 
 #include "ichat_s2s_client_impl.h"
 
 #include "ichat/proto/ics2s.h"
 
 struct ichat_s2s_client_impl *
-ichat_s2s_client_create_impl (enum AUTH_DIR auth_dir, const char * my_name, const char * password)
+ichat_s2s_client_create_impl (enum AUTH_DIR auth_dir, const char * my_name, const struct s2s_block * b)
 {
     struct ichat_s2s_client_impl * impl = (struct ichat_s2s_client_impl *)malloc (sizeof (struct ichat_s2s_client_impl));
     if (!impl)
@@ -30,9 +31,6 @@ ichat_s2s_client_create_impl (enum AUTH_DIR auth_dir, const char * my_name, cons
     if (!(impl->my_name = strdup (my_name)))
         goto e_no_mem;
 
-    if (!(impl->password = strdup (password)))
-        goto e_no_mem;
-
     impl->auth_dir = auth_dir;
 
     switch (auth_dir)
@@ -46,13 +44,15 @@ ichat_s2s_client_create_impl (enum AUTH_DIR auth_dir, const char * my_name, cons
             // TODO: FIXME: stop these hacks with buffers
             //              implement normal data send interface
             //              check for memleaks
-            struct buffer * b = s2s_make_login_msg (my_name, password);
+            struct buffer * auth_msg = s2s_make_login_msg (my_name, b->pass);
             buffer_unref (impl->bo);
-            impl->bo = b;
+            impl->bo = auth_msg;
             impl->is_authenticated = 1;
             break;
         }
     }
+
+    impl->link_block = b;
 
     impl->bytes_written = 0;
     
@@ -63,17 +63,32 @@ ichat_s2s_client_create_impl (enum AUTH_DIR auth_dir, const char * my_name, cons
     return 0;
 }
 
+#include "server.h"
+#include "ichat_s2s_link.h"
+
 void
 ichat_s2s_client_destroy_impl (struct ichat_s2s_client_impl * impl)
 {
     if (!impl)
         return;
+
+    //register reconnection task
+    if (impl->link_block
+        && impl->auth_dir == OUT_AUTH /* we are client */)
+    {
+        struct server * server = impl->link_block->server;
+        if (!server->shutdown)
+        {
+            struct timed_task * t = make_s2s_link_task (1000 * S2S_RECONNECT_DELTA, impl->link_block);
+            server_add_task (impl->link_block->server, t);
+        }
+    }
+
     if (impl->bi)
         buffer_unref(impl->bi);
     if (impl->bo)
         buffer_unref(impl->bo);
     if (impl->sig)
         buffer_unref(impl->sig);
-    free ((char*)impl->password);
     free ((char*)impl->my_name);
 }

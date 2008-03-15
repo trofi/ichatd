@@ -12,7 +12,6 @@
 struct client *
 ichat_s2s_server_create (int fd)
 {
-    assert (fd >= 0);
     struct client * client = client_create (fd, ICHAT_S2S_SERVER, ichat_s2s_server_ops);
     //FIXME: handle memleaks
     client->impl = ichat_s2s_server_impl_create ();
