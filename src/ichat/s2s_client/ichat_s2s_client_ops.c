@@ -136,9 +136,8 @@ ichat_s2s_client_process_message (struct server * server,
     else
     {
         // TODO: dump exact command
-        WARN ("%s: s2s client[fd=%d] sent strange command:", client->fd);
+        WARN ("%s: s2s client[fd=%d] sent strange command:", __func__, client->fd);
         log_print_array (WARN_LEVEL, buffer_data (cmd), buffer_size (cmd));
-
     }
 #undef CMD_IS
     buffer_unref (cmd);
