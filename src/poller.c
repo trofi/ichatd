@@ -2,6 +2,7 @@
 #include <sys/types.h>
 #include <unistd.h>
 #include <errno.h>
+#include <assert.h>
 #include <string.h>
 #include <sys/select.h>
 
@@ -139,7 +140,6 @@ server_poll (struct server * server)
         POLL_DEBUG ("%s: popping + execing task %p", __func__, task);
 
         task_run (task);
-        task_destroy (task);
     }
     POLL_DEBUG ("%s: check done", __func__);
     return POLL_OK;
