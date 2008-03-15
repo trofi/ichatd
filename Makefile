@@ -7,7 +7,7 @@ TARGET  = ichatd
 #
 # example: make debug=1 mudflap=1
 
-CFLAGS  += -MMD -W -Wall -Werror -Isrc
+CFLAGS  += -MMD -W -Wall -Werror -Isrc -Wformat
 
 ifdef mudflap
     CFLAGS  += -fmudflap

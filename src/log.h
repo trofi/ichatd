@@ -18,7 +18,15 @@ void close_log (void);
 int log_to_stdout (int whether_to_write);
 
 enum LOG_LEVEL set_log_level (enum LOG_LEVEL level);
-void print2log (enum LOG_LEVEL level, const char * msg, ...);
+
+#ifdef __GNUC__
+#define GCCISM(x) x
+#else
+#define GCCISM(x)
+#endif // __GNUC__
+
+void print2log (enum LOG_LEVEL level, const char * msg, ...)
+    GCCISM(  __attribute__ ((format (printf, 2, 3)))  );
 
 #define FATAL(fmt, args...)     print2log(FATAL_LEVEL, fmt, ##args)
 #define WARN(fmt, args...)      print2log(WARN_LEVEL, fmt, ##args)

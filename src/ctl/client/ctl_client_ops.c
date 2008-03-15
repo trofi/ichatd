@@ -42,7 +42,7 @@ ctl_client_process_message(struct server * server,
     assert (client);
     assert (msg);
 
-    DEBUG("client[fd=%d] processes data: [LEN = %d]", client->fd, buffer_size (msg));
+    DEBUG("client[fd=%d] processes data: [LEN = %zu]", client->fd, buffer_size (msg));
     log_print_array (DEBUG_LEVEL, buffer_data (msg), buffer_size (msg));
 
     const char * data = buffer_data (msg);

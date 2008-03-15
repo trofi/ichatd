@@ -146,7 +146,7 @@ ichat_client_read_op(struct server * server,
             struct buffer * b = buffer_alloc();
             buffer_set_size(b, msg_size);
             memcpy (buffer_data (b), msg_data_start, msg_size);
-            DEBUG ("got message len = %d from client[fd=%d]", msg_size, client->fd);
+            DEBUG ("got message len = %lu from client[fd=%d]", msg_size, client->fd);
             ichat_client_process_message (server, client, b);
             buffer_unref (b);
         }
