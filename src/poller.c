@@ -111,23 +111,26 @@ server_poll (struct server * server)
 
     if (result == -1 && errno != EINTR)
     {
-        DEBUG ("%s: %s", __func__, strerror (errno));
+        WARN ("%s: %s", __func__, strerror (errno));
         return POLL_ERROR;
     }
     POLL_DEBUG ("%s: check", __func__);
     list_for_each(clnt, server->clist)
     {
-        if (FD_ISSET(clnt->fd, &rd))
+        if (FD_ISSET(clnt->fd, &rd)
+            && !clnt->corrupt /* MUST be always true */ )
         {
             clnt->op.read (server, clnt);
             POLL_DEBUG ("%s: do [R]%d", __func__, clnt->fd);
         }
-        if (FD_ISSET(clnt->fd, &wr))
+        if (FD_ISSET(clnt->fd, &wr)
+            && !clnt->corrupt /* can be triggered by prev ops */)
         {
             clnt->op.write (server, clnt);
             POLL_DEBUG ("%s: do [W]%d", __func__, clnt->fd);
         }
-        if (FD_ISSET(clnt->fd, &ex))
+        if (FD_ISSET(clnt->fd, &ex)
+            && !clnt->corrupt /* can be triggered by prev ops */)
         {
             clnt->op.error (server, clnt);
             POLL_DEBUG ("%s: do [E]%d", __func__, clnt->fd);
