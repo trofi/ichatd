@@ -98,7 +98,7 @@ ichat_s2s_client_process_message (struct server * server,
         else
         {
             WARN ("s2s client[fd=%d] sent wrong password", client->fd);
-            log_print_array (DEBUG_LEVEL, buffer_data (clnt_msg), buffer_size (clnt_msg));
+            log_print_array (NOTE_LEVEL, buffer_data (clnt_msg), buffer_size (clnt_msg));
         }
     }
     else if (CMD_IS("FORWARD"))
