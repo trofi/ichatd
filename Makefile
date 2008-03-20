@@ -1,4 +1,5 @@
-TARGET  = ichatd
+O      ?= .
+TARGET  = $(O)/ichatd
 
 # features:
 # mudflap=1
@@ -35,7 +36,7 @@ endif
 SRC     := $(wildcard src/*.c src/*/*.c src/*/*/*.c)
 HDR     := $(wildcard src/*.h src/*/*.h src/*/*/*.h)
 
-OBJS    := $(SRC:src/%.c=obj/%.o)
+OBJS    := $(SRC:%.c=$(O)/%.o)
 
 all: $(TARGET)
 
@@ -43,18 +44,18 @@ $(TARGET): $(OBJS)
 	@$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 	@echo "[LD] $@"
 
-obj/%.o: src/%.c
+$(O)/%.o: %.c
 	@mkdir -p $$(dirname $@)
 	@$(CC) $(CFLAGS) -c $< -o $@
 	@echo "[CC] $@"
 
-obj/%.C: src/%.c
+$(O)/%.C: %.c
 	@mkdir -p $$(dirname $@)
 	@$(CC) $(CFLAGS) -E $< -o $@
 	@echo "[CC] $@"
 
 clean:
-	rm -rf $(TARGET) src/*~ src/*/*~ src/*/*/*~ obj/* TAGS BROWSE
+	rm -rf $(TARGET) src/*~ src/*/*~ src/*/*/*~ $(OBJS) $(O)/*.d $(O)/*/*.d $(O)/*/*/*.d TAGS BROWSE
 
 TAGS: $(SRC) $(HDR)
 	etags $^
@@ -62,4 +63,4 @@ TAGS: $(SRC) $(HDR)
 run: $(TARGET)
 	./$(TARGET)
 
--include obj/*.d obj/*/*.d obj/*/*/*.d
+-include $(O)/*.d $(O)/*/*.d $(O)/*/*/*.d

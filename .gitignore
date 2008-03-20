@@ -1,5 +1,6 @@
-obj/*
 ichatd
 ichatd.log
 ichatd.pid
 TAGS
+*.o
+*.d
