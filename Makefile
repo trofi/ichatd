@@ -61,6 +61,6 @@ TAGS: $(SRC) $(HDR)
 	etags $^
 
 run: $(TARGET)
-	./$(TARGET)
+	$(TARGET)
 
 -include $(O)/*.d $(O)/*/*.d $(O)/*/*/*.d
