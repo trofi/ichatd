@@ -55,7 +55,7 @@ $(O)/%.C: %.c
 	@echo "[CC] $@"
 
 clean:
-	rm -rf $(TARGET) src/*~ src/*/*~ src/*/*/*~ $(OBJS) $(O)/*.d $(O)/*/*.d $(O)/*/*/*.d TAGS BROWSE
+	rm -rf $(TARGET) src/*~ src/*/*~ src/*/*/*~ $(OBJS) $(O)/*.d $(O)/*/*.d $(O)/*/*/*.d $(O)/*/*/*/*.d TAGS BROWSE
 
 TAGS: $(SRC) $(HDR)
 	etags $^

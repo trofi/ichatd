@@ -1,1 +1,1 @@
-debug=1 mudflap=1
+debug=1 mudflap=1 O=.build
