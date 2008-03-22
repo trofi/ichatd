@@ -10,6 +10,7 @@
 #include "ichat_client_ops.h"
 
 #include "buffer.h"
+#include "buffer_queue.h"
 #include "client.h"
 #include "server.h"
 #include "config.h"
@@ -170,13 +171,10 @@ ichat_client_write_op(struct server * server,
 
     // if buffer - write buffer part
     // dispatcher, pipe manager
-    if (!impl->bo
-        || buffer_size(impl->bo) == 0)
+    if (buffer_queue_size(impl->bo) == 0)
         return;
 
-    ssize_t result = buffer_list_write (impl->bo,
-                                        impl->bytes_written,
-                                        client->fd);
+    ssize_t result = buffer_queue_write (impl->bo, client->fd);
     switch (result)
     {
         case -1:
@@ -188,23 +186,6 @@ ichat_client_write_op(struct server * server,
         default:
             break;
     }
-    // slight hack ;] (i'm lazy)
-    // (no buffer offsets)
-    result += impl->bytes_written;
-    impl->bytes_written = 0;
-
-    while (result
-           && impl->bo
-           && (size_t)result >= buffer_size(impl->bo))
-    {
-        struct buffer * old_head = impl->bo;
-        impl->bo = buffer_next (impl->bo);
-        result -= buffer_size(old_head);
-        buffer_unref (old_head);
-    }
-    impl->bytes_written = result;
-    if (!impl->bo)
-        impl->bo = buffer_alloc();
 }
 
 static void
@@ -231,44 +212,37 @@ ichat_client_add_message (struct server * server,
     size_t msg_size = buffer_size (msg);
     assert (msg_size > MIN_ICHAT_MESSAGE_LEN && msg_size < MAX_ICHAT_MESSAGE_LEN);
 
-///////////////////////////
-    struct icc2s * icmsg = ichat_buffer_to_icc2s (msg);
-    assert (icmsg);
-    struct buffer * cmd  = icc2s_command (icmsg);
-    struct buffer * z    = buffer_alloc (); buffer_set_size (z, 1); buffer_data (z)[0] = '\0'; 
-    struct buffer * data = icc2s_data (icmsg);
-
-    buffer_set_next (z, data);
-    buffer_set_next (cmd, z);
-        
-///////////////////////////
-
-    struct buffer * msg_head = buffer_alloc ();
-    size_t new_msg_size = buffer_size(cmd) + 1 /* '\0' */ + buffer_size(data);
-
-    size_t msg_head_size = number_len (new_msg_size) + 1; // + '\0'
-    buffer_set_size (msg_head, msg_head_size);
-    sprintf (buffer_data (msg_head), "%zu", new_msg_size);
- 
-    buffer_set_next (msg_head, cmd);
-
     struct ichat_client_impl * impl = client->impl;
     assert (impl);
+    struct buffer_queue * q = impl->bo;
+    assert (q);
 
-    struct buffer * b = impl->bo;
+    struct icc2s * icmsg = ichat_buffer_to_icc2s (msg);
+    assert (icmsg);
+    {
+        // here we form [len]\0[cmd]\0[data]
+        // TODO: check for zeroes: cmd, z, data (e_no_mem)
+        struct buffer * cmd  = icc2s_command (icmsg);
+        struct buffer * z    = buffer_alloc (); buffer_set_size (z, 1); buffer_data (z)[0] = '\0';
+        struct buffer * data = icc2s_data (icmsg);
 
-    // currently we simply add this data at end of response to this client
-    if (buffer_size (b))
-    {
-        while (buffer_next (b))
-            b = buffer_next (b);
-        buffer_set_next (b, msg_head);
+        struct buffer * msg_head = buffer_alloc ();
+        size_t new_msg_size = buffer_size (cmd) + 1 /* '\0' */ + buffer_size(data);
+
+        size_t msg_head_size = number_len (new_msg_size) + 1; // + '\0'
+        buffer_set_size (msg_head, msg_head_size);
+        sprintf (buffer_data (msg_head), "%zu", new_msg_size);
+
+        buffer_queue_append (q, msg_head); // [len]\0
+        buffer_queue_append (q, cmd);      // [cmd]
+        buffer_queue_append (q, z);        // \0
+        buffer_queue_append (q, data);     // [data]
+
+        buffer_unref (data);
+        buffer_unref (z);
+        buffer_unref (cmd);
     }
-    else
-    {
-        buffer_unref(impl->bo);
-        impl->bo = msg_head;
-    }
+    icc2s_unref (icmsg);
 }
 
 static int
@@ -294,5 +268,5 @@ ichat_client_can_write_op(struct server * server,
 
     if (client->corrupt)
         return 0;
-    return buffer_size (impl->bo);
+    return buffer_queue_size (impl->bo);
 }

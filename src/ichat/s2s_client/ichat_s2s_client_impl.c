@@ -2,6 +2,7 @@
 #include <string.h>
 
 #include "buffer.h"
+#include "buffer_queue.h"
 #include "config.h"
 
 #include "ichat_s2s_client_impl.h"
@@ -20,7 +21,7 @@ ichat_s2s_client_create_impl (enum AUTH_DIR auth_dir, const char * my_name, cons
     if (!impl->bi)
         goto e_no_mem;
     
-    impl->bo = buffer_alloc();
+    impl->bo = buffer_queue_alloc();
     if (!impl->bo)
         goto e_no_mem;
 
@@ -45,8 +46,10 @@ ichat_s2s_client_create_impl (enum AUTH_DIR auth_dir, const char * my_name, cons
             //              implement normal data send interface
             //              check for memleaks
             struct buffer * auth_msg = s2s_make_login_msg (my_name, b->pass);
-            buffer_unref (impl->bo);
-            impl->bo = auth_msg;
+            {
+                buffer_queue_append (impl->bo, auth_msg);
+            }
+            buffer_unref (auth_msg);
             impl->is_authenticated = 1;
             break;
         }
@@ -54,8 +57,6 @@ ichat_s2s_client_create_impl (enum AUTH_DIR auth_dir, const char * my_name, cons
 
     impl->link_block = b;
 
-    impl->bytes_written = 0;
-    
     return impl;
 
   e_no_mem:
@@ -72,7 +73,7 @@ ichat_s2s_client_destroy_impl (struct ichat_s2s_client_impl * impl)
     if (!impl)
         return;
 
-    //register reconnection task
+    // register reconnection task
     if (impl->link_block
         && impl->auth_dir == OUT_AUTH /* we are client */)
     {
@@ -85,10 +86,10 @@ ichat_s2s_client_destroy_impl (struct ichat_s2s_client_impl * impl)
     }
 
     if (impl->bi)
-        buffer_unref(impl->bi);
+        buffer_unref (impl->bi);
     if (impl->bo)
-        buffer_unref(impl->bo);
+        buffer_queue_free (impl->bo);
     if (impl->sig)
-        buffer_unref(impl->sig);
+        buffer_unref (impl->sig);
     free ((char*)impl->my_name);
 }

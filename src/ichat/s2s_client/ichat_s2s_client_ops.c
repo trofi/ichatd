@@ -10,6 +10,7 @@
 #include "ichat_s2s_client_ops.h"
 
 #include "buffer.h"
+#include "buffer_queue.h"
 #include "client.h"
 #include "server.h"
 #include "config.h"
@@ -237,12 +238,10 @@ ichat_s2s_client_write_op(struct server * server,
 
     // if buffer - write buffer part
     // dispatcher, pipe manager
-    if (buffer_size (impl->bo) == 0)
+    if (buffer_queue_size (impl->bo) == 0)
         return;
 
-    ssize_t result = buffer_list_write (impl->bo,
-                                        impl->bytes_written,
-                                        client->fd);
+    ssize_t result = buffer_queue_write (impl->bo, client->fd);
     switch (result)
     {
         case -1:
@@ -254,28 +253,11 @@ ichat_s2s_client_write_op(struct server * server,
         default:
             break;
     }
-    // slight hack ;] (i'm lazy)
-    // (no buffer offsets)
-    result += impl->bytes_written;
-    impl->bytes_written = 0;
-
-    while (result
-           && impl->bo
-           && (size_t)result >= buffer_size(impl->bo))
-    {
-        struct buffer * old_head = impl->bo;
-        impl->bo = buffer_next (impl->bo);
-        result -= buffer_size(old_head);
-        buffer_unref (old_head);
-    }
-    impl->bytes_written = result;
-    if (!impl->bo)
-        impl->bo = buffer_alloc();
 }
 
 static void
 ichat_s2s_client_error_op(struct server * server,
-                      struct client * client)
+                          struct client * client)
 {
     assert (server);
     assert (client);
@@ -297,52 +279,44 @@ ichat_s2s_client_add_message (struct server * server,
     size_t msg_size = buffer_size (msg);
     assert (msg_size > MIN_ICHAT_MESSAGE_LEN && msg_size < MAX_ICHAT_MESSAGE_LEN);
 
-///////////////////////////
-    // cmd - is [server][timestamp][command]
-    // FIXME: we must not substitute remote server's name with our
-    // TODO: change chat message represettation to s2s (to keep orig server's name)
-    const char * my_name = server->config->s2s_me->host;
-    const char * command = "FORWARD";
-
-    size_t cmd_size = strlen (my_name) + 1 + 17 /* timestamp*/ + 1 + strlen (command) + 1 + number_len(msg_size) + 1;
-    struct buffer * cmd    = buffer_alloc ();
-    buffer_set_size (cmd, cmd_size);
-
-    char timestamp[18];
-
-    make_timestamp (timestamp);
-    snprintf (buffer_data (cmd), cmd_size,
-              "%s%c%s%c%s%c%zu", my_name, '\0', timestamp, '\0', command, '\0', msg_size);
-    buffer_set_size (cmd, cmd_size);
-    buffer_set_next (cmd, buffer_ref (msg));
-        
-///////////////////////////
-
-    struct buffer * msg_head = buffer_alloc ();
-    size_t new_msg_size = buffer_size (cmd) + buffer_size (msg);
-
-    size_t msg_head_size = number_len (new_msg_size) + 1; // + '\0'
-    buffer_set_size (msg_head, msg_head_size);
-    sprintf (buffer_data (msg_head), "%zu", new_msg_size);
- 
-    buffer_set_next (msg_head, cmd);
-
     struct ichat_s2s_client_impl * impl = client->impl;
     assert (impl);
+    struct buffer_queue * q = impl->bo;
+    assert (q);
 
-    struct buffer * b = impl->bo;
+    // form such s2s message: [len]\0[server]\0[timestamp]\0[command]\0[data]
+    {
+        ///////////////////////////
+        // FIXME: we must not substitute remote server's name with ours
+        // TODO: change chat message represetation to s2s (to keep orig server's name)
+        
+        const char * my_name = server->config->s2s_me->host;
+        const char * command = "FORWARD";
 
-    // currently we simply add this data at end of response to this client
-    if (buffer_size (b))
-    {
-        while (buffer_next (b))
-            b = buffer_next (b);
-        buffer_set_next (b, msg_head);
-    }
-    else
-    {
-        buffer_unref(impl->bo);
-        impl->bo = msg_head;
+        // form [server]\0[timestamp]\0[command]\0
+        size_t cmd_size = strlen (my_name) + 1 + 17 /* timestamp*/ + 1 + strlen (command) + 1 + number_len(msg_size) + 1;
+        struct buffer * cmd = buffer_alloc ();
+        buffer_set_size (cmd, cmd_size);
+
+        char timestamp[18];
+        make_timestamp (timestamp);
+        snprintf (buffer_data (cmd), cmd_size,
+                  "%s%c%s%c%s%c%zu", my_name, '\0', timestamp, '\0', command, '\0', msg_size);
+
+        // form [len]\0
+        struct buffer * msg_head = buffer_alloc ();
+        size_t new_msg_size = buffer_size (cmd) + buffer_size (msg);
+
+        size_t msg_head_size = number_len (new_msg_size) + 1; // + '\0'
+        buffer_set_size (msg_head, msg_head_size);
+        sprintf (buffer_data (msg_head), "%zu", new_msg_size);
+
+        buffer_queue_append (q, msg_head); // send [len]\0
+        buffer_queue_append (q, cmd);      // send [server]\0[timestamp]\0[command]\0
+        buffer_queue_append (q, msg);      // send [data]
+
+        buffer_unref (msg_head);
+        buffer_unref (cmd);
     }
 }
 
@@ -357,7 +331,7 @@ ichat_s2s_client_can_read_op(struct server * server,
 
 static int
 ichat_s2s_client_can_write_op(struct server * server,
-                          struct client * client)
+                              struct client * client)
 {
     assert (server);
     assert (client);
@@ -369,5 +343,5 @@ ichat_s2s_client_can_write_op(struct server * server,
 
     if (client->corrupt)
         return 0;
-    return buffer_size (impl->bo);
+    return buffer_queue_size (impl->bo);
 }

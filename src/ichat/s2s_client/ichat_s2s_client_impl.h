@@ -6,6 +6,7 @@
 #include "ichat_s2s_client.h"  // for AUTH_TYPE
 
 struct buffer;
+struct buffer_queue;
 struct ichat_s2s_client_impl;
 
 struct ichat_s2s_client_impl * ichat_s2s_client_create_impl (enum AUTH_DIR auth_dir, const char * my_name, const struct s2s_block * b);
@@ -13,10 +14,8 @@ void ichat_s2s_client_destroy_impl (struct ichat_s2s_client_impl * impl);
 
 struct ichat_s2s_client_impl
 {
-    struct buffer * bi; // strings form client
-
-    size_t bytes_written;
-    struct buffer * bo; // strings to   client
+    struct buffer * bi; // msgs form client
+    struct buffer_queue * bo; // msgs to client
 
     struct buffer * sig; // client's signature
 

@@ -7,6 +7,7 @@
 #include "ctl_client_ops.h"
 
 #include "buffer.h"
+#include "buffer_queue.h"
 #include "client.h"
 #include "server.h"
 #include "config.h"
@@ -141,15 +142,10 @@ ctl_client_write_op(struct server * server,
     struct ctl_client_impl * impl = client->impl;
     assert (impl);
 
-    // if buffer - write buffer part
-    // dispatcher, pipe manager
-    if (!impl->bo
-        || buffer_size(impl->bo) == 0)
+    if (buffer_queue_size (impl->bo) == 0)
         return;
 
-    ssize_t result = buffer_list_write (impl->bo,
-                                   impl->bytes_written,
-                                   client->fd);
+    ssize_t result = buffer_queue_write (impl->bo, client->fd);
     switch (result)
     {
         case -1:
@@ -161,23 +157,6 @@ ctl_client_write_op(struct server * server,
         default:
             break;
     }
-    // slight hack ;] (i'm lazy)
-    // (no buffer offsets)
-    result += impl->bytes_written;
-    impl->bytes_written = 0;
-
-    while (result
-           && impl->bo
-           && (size_t)result >= buffer_size(impl->bo))
-    {
-        struct buffer * old_head = impl->bo;
-        impl->bo = buffer_next (impl->bo);
-        result -= buffer_size(old_head);
-        buffer_unref (old_head);
-    }
-    impl->bytes_written = result;
-    if (!impl->bo)
-        impl->bo = buffer_alloc();
 }
 
 static void
@@ -203,20 +182,8 @@ ctl_client_add_message (struct server * server,
     struct ctl_client_impl * impl = client->impl;
     assert (impl);
 
-    struct buffer * b = impl->bo;
-
-    // currently we simply add this data at end of response to this client
-    if (buffer_size (b))
-    {
-        while (buffer_next (b))
-            b = buffer_next (b);
-        buffer_set_next (b, buffer_ref (msg));
-    }
-    else
-    {
-        buffer_unref(impl->bo);
-        impl->bo = buffer_ref (msg);
-    }
+    struct buffer_queue * q = impl->bo;
+    buffer_queue_append (q, msg);
 }
 
 static int
@@ -244,5 +211,5 @@ ctl_client_can_write_op(struct server * server,
 
     if (client->corrupt)
         return 0;
-    return buffer_size (impl->bo);
+    return buffer_queue_size (impl->bo);
 }
