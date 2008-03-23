@@ -10,31 +10,31 @@
 static struct ichat_s2s_server_impl *
 ichat_s2s_server_impl_alloc (void)
 {
-    struct ichat_s2s_server_impl * priv = (struct ichat_s2s_server_impl *)malloc (sizeof (struct ichat_s2s_server_impl));
-    if (!priv)
+    struct ichat_s2s_server_impl * impl = (struct ichat_s2s_server_impl *)malloc (sizeof (struct ichat_s2s_server_impl));
+    if (!impl)
         goto e_no_mem;
-    memset (priv, 0, sizeof (struct ichat_s2s_server_impl));
+    memset (impl, 0, sizeof (struct ichat_s2s_server_impl));
 
-    return priv;
+    return impl;
 
   e_no_mem:
-    ichat_s2s_server_impl_destroy (priv);
+    ichat_s2s_server_impl_destroy (impl);
     return 0;
 }
 
 struct ichat_s2s_server_impl *
 ichat_s2s_server_impl_create ()
 {
-    struct ichat_s2s_server_impl * priv = ichat_s2s_server_impl_alloc();
-    if (!priv)
+    struct ichat_s2s_server_impl * impl = ichat_s2s_server_impl_alloc();
+    if (!impl)
         return 0;
-    return priv;
+    return impl;
 }
 
 void
-ichat_s2s_server_impl_destroy (struct ichat_s2s_server_impl * priv)
+ichat_s2s_server_impl_destroy (struct ichat_s2s_server_impl * impl)
 {
-    if (!priv)
+    if (!impl)
         return;
-    free (priv);
+    free (impl);
 }

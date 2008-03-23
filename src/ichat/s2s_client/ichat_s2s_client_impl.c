@@ -92,4 +92,5 @@ ichat_s2s_client_destroy_impl (struct ichat_s2s_client_impl * impl)
     if (impl->sig)
         buffer_unref (impl->sig);
     free ((char*)impl->my_name);
+    free (impl);
 }

@@ -38,4 +38,5 @@ ctl_client_destroy_impl (struct ctl_client_impl * impl)
         buffer_unref (impl->bi);
     if (impl->bo)
         buffer_queue_free (impl->bo);
+    free (impl);
 }

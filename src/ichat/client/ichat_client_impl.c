@@ -46,4 +46,5 @@ ichat_client_destroy_impl (struct ichat_client_impl * impl)
         buffer_queue_free (impl->bo);
     if (impl->sig)
         buffer_unref(impl->sig);
+    free (impl);
 }

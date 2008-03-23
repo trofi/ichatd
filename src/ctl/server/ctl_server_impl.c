@@ -10,31 +10,31 @@
 static struct ctl_server_impl *
 ctl_server_impl_alloc (void)
 {
-    struct ctl_server_impl * priv = (struct ctl_server_impl *)malloc (sizeof (struct ctl_server_impl));
-    if (!priv)
+    struct ctl_server_impl * impl = (struct ctl_server_impl *)malloc (sizeof (struct ctl_server_impl));
+    if (!impl)
         goto e_no_mem;
-    memset (priv, 0, sizeof (struct ctl_server_impl));
+    memset (impl, 0, sizeof (struct ctl_server_impl));
 
-    return priv;
+    return impl;
 
   e_no_mem:
-    ctl_server_impl_destroy (priv);
+    ctl_server_impl_destroy (impl);
     return 0;
 }
 
 struct ctl_server_impl *
 ctl_server_impl_create ()
 {
-    struct ctl_server_impl * priv = ctl_server_impl_alloc();
-    if (!priv)
+    struct ctl_server_impl * impl = ctl_server_impl_alloc();
+    if (!impl)
         return 0;
-    return priv;
+    return impl;
 }
 
 void
-ctl_server_impl_destroy (struct ctl_server_impl * priv)
+ctl_server_impl_destroy (struct ctl_server_impl * impl)
 {
-    if (!priv)
+    if (!impl)
         return;
-    free (priv);
+    free (impl);
 }
