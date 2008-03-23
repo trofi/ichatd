@@ -64,6 +64,7 @@ ctl_client_process_message(struct server * server,
             "help - this message\r\n"
             "echo <some text> - i'll respond you the same text\r\n"
             "exit - close connection\r\n"
+            "stop - stops server\r\n"
             ;
         static const size_t resp_len = sizeof (resp) - 1;
 
@@ -73,6 +74,10 @@ ctl_client_process_message(struct server * server,
     else if (IS_KW("exit"))
     {
         client->corrupt = 1;
+    }
+    else if (IS_KW("stop"))
+    {
+        server->shutdown = 1;
     }
     else
     {

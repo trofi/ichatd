@@ -15,6 +15,7 @@ void server_destroy(struct server * server);
 enum SERVER_STATUS {
     SERVER_OK = 0,
     // here follows error status
+    SERVER_STOP_REQUESTED,
     SERVER_ENOMEM,
     SERVER_BAD_CONFIG,
     SERVER_BAD_CMDARG,

@@ -459,6 +459,8 @@ server_start_dispatcher (struct server * server)
     for (;;)
     {
         enum POLL_RESULT result = server_poll (server);
+        if (server->shutdown)
+            return SERVER_STOP_REQUESTED;
         if (result == POLL_ERROR)
             return SERVER_OK; //FIXME: set proper error
     }
