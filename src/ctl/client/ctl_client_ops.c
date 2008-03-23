@@ -49,10 +49,12 @@ ctl_client_process_message(struct server * server,
     const char * data = buffer_data (msg);
     const size_t d_size = buffer_size (msg);
 
-    struct buffer * response = 0;
+    struct buffer * response = buffer_alloc ();
+
 #define IS_KW(keyword) strncmp (data, keyword, min (d_size, strlen (keyword))) == 0
     if (IS_KW("echo"))
     {
+        buffer_unref (response);
         response = buffer_ref (msg);
     }
     else if (IS_KW("help"))
@@ -61,12 +63,16 @@ ctl_client_process_message(struct server * server,
             "Command list i understand:\r\n"
             "help - this message\r\n"
             "echo <some text> - i'll respond you the same text\r\n"
+            "exit - close connection\r\n"
             ;
         static const size_t resp_len = sizeof (resp) - 1;
 
-        response = buffer_alloc ();
         buffer_set_size (response, resp_len);
         memcpy (buffer_data (response), resp, resp_len);        
+    }
+    else if (IS_KW("exit"))
+    {
+        client->corrupt = 1;
     }
     else
     {
@@ -75,7 +81,6 @@ ctl_client_process_message(struct server * server,
             "try help to get more info\r\n";
         static const size_t resp_len = sizeof (resp) - 1;
 
-        response = buffer_alloc ();
         buffer_set_size (response, resp_len);
         memcpy (buffer_data (response), resp, resp_len);
     }
@@ -83,6 +88,8 @@ ctl_client_process_message(struct server * server,
 
     // currently we simply add this data at end of response to this client
     ctl_client_add_message (server, client, response);
+
+    buffer_unref (response);
 }
 
 static void
