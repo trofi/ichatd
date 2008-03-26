@@ -241,6 +241,7 @@ ichat_client_add_message (struct server * server,
         buffer_unref (data);
         buffer_unref (z);
         buffer_unref (cmd);
+        buffer_unref (msg_head);
     }
     icc2s_unref (icmsg);
 }
