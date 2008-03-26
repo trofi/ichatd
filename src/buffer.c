@@ -25,6 +25,7 @@ static void
 buffer_free (struct buffer * b)
 {
     assert (b);
+    free (b->data);
     free (b);
 }
 
