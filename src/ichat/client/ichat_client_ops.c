@@ -145,10 +145,12 @@ ichat_client_read_op(struct server * server,
 
         {
             struct buffer * b = buffer_alloc();
-            buffer_set_size(b, msg_size);
-            memcpy (buffer_data (b), msg_data_start, msg_size);
-            DEBUG ("got message len = %lu from client[fd=%d]", msg_size, client->fd);
-            ichat_client_process_message (server, client, b);
+            {
+                buffer_set_size(b, msg_size);
+                memcpy (buffer_data (b), msg_data_start, msg_size);
+                DEBUG ("got message len = %lu from client[fd=%d]", msg_size, client->fd);
+                ichat_client_process_message (server, client, b);
+            }
             buffer_unref (b);
         }
 
@@ -225,23 +227,23 @@ ichat_client_add_message (struct server * server,
         struct buffer * cmd  = icc2s_command (icmsg);
         struct buffer * z    = buffer_alloc (); buffer_set_size (z, 1); buffer_data (z)[0] = '\0';
         struct buffer * data = icc2s_data (icmsg);
-
         struct buffer * msg_head = buffer_alloc ();
-        size_t new_msg_size = buffer_size (cmd) + 1 /* '\0' */ + buffer_size(data);
+        {
+            size_t new_msg_size = buffer_size (cmd) + 1 /* '\0' */ + buffer_size(data);
 
-        size_t msg_head_size = number_len (new_msg_size) + 1; // + '\0'
-        buffer_set_size (msg_head, msg_head_size);
-        sprintf (buffer_data (msg_head), "%zu", new_msg_size);
+            size_t msg_head_size = number_len (new_msg_size) + 1; // + '\0'
+            buffer_set_size (msg_head, msg_head_size);
+            sprintf (buffer_data (msg_head), "%zu", new_msg_size);
 
-        buffer_queue_append (q, msg_head); // [len]\0
-        buffer_queue_append (q, cmd);      // [cmd]
-        buffer_queue_append (q, z);        // \0
-        buffer_queue_append (q, data);     // [data]
-
+            buffer_queue_append (q, msg_head); // [len]\0
+            buffer_queue_append (q, cmd);      // [cmd]
+            buffer_queue_append (q, z);        // \0
+            buffer_queue_append (q, data);     // [data]
+        }
+        buffer_unref (msg_head);
         buffer_unref (data);
         buffer_unref (z);
         buffer_unref (cmd);
-        buffer_unref (msg_head);
     }
     icc2s_unref (icmsg);
 }

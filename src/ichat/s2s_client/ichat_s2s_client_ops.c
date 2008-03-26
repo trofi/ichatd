@@ -114,13 +114,12 @@ ichat_s2s_client_process_message (struct server * server,
             if (zero_pos)
             {
                 struct buffer * b = buffer_alloc ();
-                size_t new_size = buf_sz - (zero_pos + 1 - buf_data);
-
-                buffer_set_size (b, buf_sz);
-                memcpy (buffer_data (b), zero_pos + 1, new_size);
-
-                ichat_dispatch (server, client, b);
-
+                {
+                    size_t new_size = buf_sz - (zero_pos + 1 - buf_data);
+                    buffer_set_size (b, buf_sz);
+                    memcpy (buffer_data (b), zero_pos + 1, new_size);
+                    ichat_dispatch (server, client, b);
+                }
                 buffer_unref (b);
             }
             else
@@ -210,10 +209,12 @@ ichat_s2s_client_read_op(struct server * server,
 
         {
             struct buffer * b = buffer_alloc();
-            buffer_set_size(b, msg_size);
-            memcpy (buffer_data (b), msg_data_start, msg_size);
-            DEBUG ("got message len = %lu from s2s client[fd=%d]", msg_size, client->fd);
-            ichat_s2s_client_process_message (server, client, b);
+            {
+                buffer_set_size(b, msg_size);
+                memcpy (buffer_data (b), msg_data_start, msg_size);
+                DEBUG ("got message len = %lu from s2s client[fd=%d]", msg_size, client->fd);
+                ichat_s2s_client_process_message (server, client, b);
+            }
             buffer_unref (b);
         }
 
@@ -305,16 +306,17 @@ ichat_s2s_client_add_message (struct server * server,
 
         // form [len]\0
         struct buffer * msg_head = buffer_alloc ();
-        size_t new_msg_size = buffer_size (cmd) + buffer_size (msg);
+        {
+            size_t new_msg_size = buffer_size (cmd) + buffer_size (msg);
 
-        size_t msg_head_size = number_len (new_msg_size) + 1; // + '\0'
-        buffer_set_size (msg_head, msg_head_size);
-        sprintf (buffer_data (msg_head), "%zu", new_msg_size);
+            size_t msg_head_size = number_len (new_msg_size) + 1; // + '\0'
+            buffer_set_size (msg_head, msg_head_size);
+            sprintf (buffer_data (msg_head), "%zu", new_msg_size);
 
-        buffer_queue_append (q, msg_head); // send [len]\0
-        buffer_queue_append (q, cmd);      // send [server]\0[timestamp]\0[command]\0
-        buffer_queue_append (q, msg);      // send [data]
-
+            buffer_queue_append (q, msg_head); // send [len]\0
+            buffer_queue_append (q, cmd);      // send [server]\0[timestamp]\0[command]\0
+            buffer_queue_append (q, msg);      // send [data]
+        }
         buffer_unref (msg_head);
         buffer_unref (cmd);
     }
