@@ -231,7 +231,8 @@ server_run (struct server * server)
 }
 
 static int server_cleanup_dispatcher (struct server * server);
-static int server_close_ports (struct server * server);
+static int server_close_clients (struct server * server);
+static int server_kill_tasks (struct server * server);
 static int server_close_log_subsystem (struct server * server);
 
 enum SERVER_STATUS
@@ -240,7 +241,8 @@ server_shutdown (struct server * server)
     assert (server);
 
     server_cleanup_dispatcher (server);
-    server_close_ports (server);
+    server_close_clients (server);
+    server_kill_tasks (server);
     server_close_log_subsystem (server);
     
     //FIXME: handle errors, proper shutdown
@@ -392,9 +394,30 @@ server_register_s2s_links (struct server * server)
 ////////////////////
 
 static int
-server_close_ports (struct server * server)
+server_close_clients (struct server * server)
 {
     assert (server);
+    while (server->clist)
+    {
+        struct client * old_head = server->clist;
+        server->clist = old_head->next;
+        client_destroy (old_head);
+    }
+    return 0;
+}
+
+static int
+server_kill_tasks (struct server * server)
+{
+    assert (server);
+
+    for(;;)
+    {
+        struct timed_task * task = server_pop_task (server);
+        if (!task) break;
+
+        task_destroy (task);
+    }
     return 0;
 }
 

@@ -25,7 +25,7 @@ task_create (long long delta, TASK_FUN fun, TASK_DTOR_FUN dtor, void * data)
     return task;
 }
 
-static void
+void
 task_destroy (struct timed_task * task)
 {
     if (!task)
