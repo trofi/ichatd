@@ -34,7 +34,7 @@ buffer_enlarge (struct buffer * b, size_t new_size)
 {
     assert (b);
     assert (b->rc > 0);
-    b->data = realloc (b->data, new_size);
+    b->data = (char *)realloc (b->data, new_size);
 }
 
 struct buffer *

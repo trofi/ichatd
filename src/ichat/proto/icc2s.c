@@ -42,7 +42,7 @@ ichat_buffer_to_icc2s (struct buffer * msg)
     // find sender
     if (b_size <= 0)
         goto e_bad_msg;
-    const char * sender_end = memchr (b_data, 0, b_size);
+    const char * sender_end = (const char *)memchr (b_data, 0, b_size);
     if (!sender_end)
         goto e_bad_msg;
     c2s_msg->sender = b_data;
@@ -54,7 +54,7 @@ ichat_buffer_to_icc2s (struct buffer * msg)
     //find command
     if (b_size <= 0)
         goto e_bad_msg;
-    const char * cmd_end = memchr (b_data, 0, b_size);
+    const char * cmd_end = (const char *)memchr (b_data, 0, b_size);
     if (!cmd_end)
         goto e_bad_msg;
     c2s_msg->command = b_data;
@@ -66,7 +66,7 @@ ichat_buffer_to_icc2s (struct buffer * msg)
     //find receiver
     if (b_size <= 0)
         goto e_bad_msg;
-    const char * receiver_end = memchr (b_data, 0, b_size);
+    const char * receiver_end = (const char *)memchr (b_data, 0, b_size);
     if (!receiver_end)
         goto e_bad_msg;
     c2s_msg->receiver = b_data;

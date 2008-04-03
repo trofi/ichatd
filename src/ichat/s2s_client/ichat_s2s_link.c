@@ -37,7 +37,8 @@ start_ichat_s2s_link (const struct s2s_block * b)
 static void
 task_start_ichat_s2s_link (void * data)
 {
-    start_ichat_s2s_link (data);
+    const struct s2s_block * link_block = (const struct s2s_block *)data;
+    start_ichat_s2s_link (link_block);
 }
 
 struct timed_task *

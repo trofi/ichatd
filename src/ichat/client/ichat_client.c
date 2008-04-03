@@ -29,7 +29,8 @@ ichat_client_destroy (struct client * client)
 {
     if (!client) return;
     DEBUG ("ichat_client closed[fd=%d]", client->fd);
-    if (client->impl)
-        ichat_client_destroy_impl(client->impl);
+    struct ichat_client_impl * impl = (struct ichat_client_impl *)(client->impl);
+    if (impl)
+        ichat_client_destroy_impl(impl);
     // TODO: broadcast DISCONNECT ichat message
 }

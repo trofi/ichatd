@@ -25,6 +25,7 @@ ichat_server_destroy (struct client * client)
 {
     if (!client) return;
     DEBUG ("ichat_server closed [fd=%d]", client->fd);
-    if (client->impl)
-        ichat_server_impl_destroy (client->impl);
+    struct ichat_server_impl * impl = (struct ichat_server_impl *)(client->impl);
+    if (impl)
+        ichat_server_impl_destroy (impl);
 }

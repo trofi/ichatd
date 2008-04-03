@@ -104,7 +104,7 @@ ctl_client_read_op(struct server * server,
     DEBUG (__func__);
     assert (server);
     assert (client);
-    struct ctl_client_impl * impl = client->impl;
+    struct ctl_client_impl * impl = (struct ctl_client_impl *)(client->impl);
     assert (impl);
     ssize_t result = buffer_read (impl->bi,
                                   client->fd,
@@ -151,7 +151,7 @@ ctl_client_write_op(struct server * server,
     DEBUG (__func__);
     assert (server);
     assert (client);
-    struct ctl_client_impl * impl = client->impl;
+    struct ctl_client_impl * impl = (struct ctl_client_impl *)(client->impl);
     assert (impl);
 
     if (buffer_queue_size (impl->bo) == 0)
@@ -191,7 +191,7 @@ ctl_client_add_message (struct server * server,
     assert (client);
     assert (msg);
 
-    struct ctl_client_impl * impl = client->impl;
+    struct ctl_client_impl * impl = (struct ctl_client_impl *)(client->impl);
     assert (impl);
 
     struct buffer_queue * q = impl->bo;
@@ -217,7 +217,7 @@ ctl_client_can_write_op(struct server * server,
     assert (client);
 
     // TODO: check for avail mq and msgio buffer
-    struct ctl_client_impl * impl = client->impl;
+    struct ctl_client_impl * impl = (struct ctl_client_impl *)(client->impl);
     assert (impl);
     assert (impl->bo);
 

@@ -50,7 +50,7 @@ ichat_client_process_message (struct server * server,
     assert (server);
     assert (client);
     assert (msg);
-    struct ichat_client_impl * impl = client->impl;
+    struct ichat_client_impl * impl = (struct ichat_client_impl *)(client->impl);
     assert (impl);
 
     // validate
@@ -87,7 +87,7 @@ ichat_client_read_op(struct server * server,
 {
     assert (server);
     assert (client);
-    struct ichat_client_impl * impl = client->impl;
+    struct ichat_client_impl * impl = (struct ichat_client_impl *)(client->impl);
     assert (impl);
     ssize_t result = buffer_read (impl->bi,
                                   client->fd,
@@ -114,7 +114,7 @@ ichat_client_read_op(struct server * server,
 
         const char * p = buffer_data(impl->bi);
 
-        const char * number_end = memchr (p, '\0', MAX_NUMBER_LEN);
+        const char * number_end = (const char *)memchr (p, '\0', MAX_NUMBER_LEN);
         if (!number_end)
             return;
 
@@ -168,7 +168,7 @@ ichat_client_write_op(struct server * server,
 {
     assert (server);
     assert (client);
-    struct ichat_client_impl * impl = client->impl;
+    struct ichat_client_impl * impl = (struct ichat_client_impl *)(client->impl);
     assert (impl);
 
     // if buffer - write buffer part
@@ -214,7 +214,7 @@ ichat_client_add_message (struct server * server,
     size_t msg_size = buffer_size (msg);
     assert (msg_size > MIN_ICHAT_MESSAGE_LEN && msg_size < MAX_ICHAT_MESSAGE_LEN);
 
-    struct ichat_client_impl * impl = client->impl;
+    struct ichat_client_impl * impl = (struct ichat_client_impl *)(client->impl);
     assert (impl);
     struct buffer_queue * q = impl->bo;
     assert (q);
@@ -265,7 +265,7 @@ ichat_client_can_write_op(struct server * server,
     assert (client);
 
     // TODO: check for avail mq and msgio buffer
-    struct ichat_client_impl * impl = client->impl;
+    struct ichat_client_impl * impl = (struct ichat_client_impl *)(client->impl);
     assert (impl);
     assert (impl->bo);
 

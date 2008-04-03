@@ -24,6 +24,7 @@ ctl_server_destroy (struct client * client)
 {
     if (!client) return;
     DEBUG ("ctl_server[fd=%d] closed", client->fd);
-    if (client->impl)
-        ctl_server_impl_destroy (client->impl);
+    struct ctl_server_impl * impl = (struct ctl_server_impl *)(client->impl);
+    if (impl)
+        ctl_server_impl_destroy (impl);
 }

@@ -30,6 +30,7 @@ ichat_s2s_client_destroy (struct client * client)
 {
     if (!client) return;
     DEBUG ("ichat_s2s_client closed [fd=%d]", client->fd);
-    if (client->impl)
-        ichat_s2s_client_destroy_impl(client->impl);
+    struct ichat_s2s_client_impl * impl = (struct ichat_s2s_client_impl *)(client->impl);
+    if (impl)
+        ichat_s2s_client_destroy_impl(impl);
 }

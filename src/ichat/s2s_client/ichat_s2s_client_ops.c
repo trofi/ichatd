@@ -50,7 +50,7 @@ ichat_s2s_client_process_message (struct server * server,
     assert (server);
     assert (client);
     assert (msg);
-    struct ichat_s2s_client_impl * impl = client->impl;
+    struct ichat_s2s_client_impl * impl = (struct ichat_s2s_client_impl *)(client->impl);
     assert (impl);
 
     struct ics2s * icmsg = ichat_buffer_to_ics2s (msg);
@@ -108,9 +108,9 @@ ichat_s2s_client_process_message (struct server * server,
         {
             // stripping out message size
             size_t buf_sz = buffer_size (clnt_msg);
-            char * buf_data = buffer_data (clnt_msg);
+            const char * buf_data = buffer_data (clnt_msg);
 
-            char * zero_pos = memchr (buf_data, '\0', buf_sz);
+            const char * zero_pos = (const char *)memchr (buf_data, '\0', buf_sz);
             if (zero_pos)
             {
                 struct buffer * b = buffer_alloc ();
@@ -151,7 +151,7 @@ ichat_s2s_client_read_op(struct server * server,
 {
     assert (server);
     assert (client);
-    struct ichat_s2s_client_impl * impl = client->impl;
+    struct ichat_s2s_client_impl * impl = (struct ichat_s2s_client_impl *)(client->impl);
     assert (impl);
     ssize_t result = buffer_read (impl->bi,
                                   client->fd,
@@ -178,7 +178,7 @@ ichat_s2s_client_read_op(struct server * server,
 
         const char * p = buffer_data(impl->bi);
 
-        const char * number_end = memchr (p, '\0', MAX_NUMBER_LEN);
+        const char * number_end = (const char *)memchr (p, '\0', MAX_NUMBER_LEN);
         if (!number_end)
             return;
 
@@ -233,7 +233,7 @@ ichat_s2s_client_write_op(struct server * server,
     DEBUG (__func__);
     assert (server);
     assert (client);
-    struct ichat_s2s_client_impl * impl = client->impl;
+    struct ichat_s2s_client_impl * impl = (struct ichat_s2s_client_impl *)(client->impl);
     assert (impl);
     assert (impl->bo);
 
@@ -280,7 +280,7 @@ ichat_s2s_client_add_message (struct server * server,
     size_t msg_size = buffer_size (msg);
     assert (msg_size > MIN_ICHAT_MESSAGE_LEN && msg_size < MAX_ICHAT_MESSAGE_LEN);
 
-    struct ichat_s2s_client_impl * impl = client->impl;
+    struct ichat_s2s_client_impl * impl = (struct ichat_s2s_client_impl *)(client->impl);
     assert (impl);
     struct buffer_queue * q = impl->bo;
     assert (q);
@@ -339,7 +339,7 @@ ichat_s2s_client_can_write_op(struct server * server,
     assert (client);
 
     // TODO: check for avail mq and msgio buffer
-    struct ichat_s2s_client_impl * impl = client->impl;
+    struct ichat_s2s_client_impl * impl = (struct ichat_s2s_client_impl *)(client->impl);
     assert (impl);
     assert (impl->bo);
 

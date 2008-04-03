@@ -132,7 +132,7 @@ log_print_array (enum LOG_LEVEL level, const char * p, unsigned int len)
     // worst case - all chars are unprintable (\xXY)
     // rules: %->%%
     // all the rest - as is
-    char * q = malloc (len*4 + 1);
+    char * q = (char *)malloc (len*4 + 1);
     if (!q)
     {
         FATAL("ERROR: no mem to print aray");

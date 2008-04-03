@@ -16,7 +16,7 @@ char *
 IC_strdup (const char * str)
 {
     size_t len = strlen (str);
-    char * new_str = malloc (sizeof (char) * (len + 1));
+    char * new_str = (char *)malloc (sizeof (char) * (len + 1));
     if (new_str == 0)
         return new_str;
     memcpy (new_str, str, len);

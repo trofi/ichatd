@@ -350,7 +350,7 @@ server_bind_ports (struct server * server)
 static void
 heartbeat (void * data)
 {
-    struct server * server = data;
+    struct server * server = (struct server *)data;
     NOTE ("-- HEARTBEAT --");
     // reregister event
     server_register_heartbeats (server);
