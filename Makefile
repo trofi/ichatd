@@ -8,7 +8,11 @@ TARGET  = $(O)/ichatd
 #
 # example: make debug=1 mudflap=1
 
-CFLAGS  += -MMD -W -Wall -Werror -Isrc -Wformat -Wc++-compat
+CFLAGS  += -MMD -W -Wall -Werror -Isrc -Wformat
+
+# some gcc's do not support all the features
+# TODO: make such flags triggered by an option
+UNUSED_CFLAGS := -Wc++-compat
 
 ifdef mudflap
     CFLAGS  += -fmudflap
