@@ -45,24 +45,25 @@ OBJS    := $(SRC:%.c=$(O)/%.o)
 all: $(TARGET)
 
 $(TARGET): $(OBJS)
-	@$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 	@echo "[LD] $@"
+	@$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 $(O)/%.o: %.c
 	@mkdir -p $$(dirname $@)
-	@$(CC) $(CFLAGS) -c $< -o $@
 	@echo "[CC] $@"
+	@$(CC) $(CFLAGS) -c $< -o $@
 
 $(O)/%.C: %.c
 	@mkdir -p $$(dirname $@)
-	@$(CC) $(CFLAGS) -E $< -o $@
 	@echo "[CC] $@"
+	@$(CC) $(CFLAGS) -E $< -o $@
 
 clean:
 	rm -rf $(TARGET) src/*~ src/*/*~ src/*/*/*~ $(OBJS) $(O)/*.d $(O)/*/*.d $(O)/*/*/*.d $(O)/*/*/*/*.d TAGS BROWSE
 
 TAGS: $(SRC) $(HDR)
-	etags $^
+	@echo "[TAGS]"
+	@etags $^
 
 run: $(TARGET)
 	$(TARGET)
