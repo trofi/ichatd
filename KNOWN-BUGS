@@ -1,0 +1,50 @@
+* server clobbers real server-sender name in s2s mode.
+  When peer server sends it's name in FORWARD packet we don't save.
+  It is a limitation/difference in implementation. Should be fixed.
+
+* sometimes server hangs writing HEARTBEAT messages to .log:
+Tue Jul  8 02:53:48 2008 ichatd[2367]: -- HEARTBEAT --
+Tue Jul  8 02:58:48 2008 ichatd[2367]: -- HEARTBEAT --
+Tue Jul  8 03:03:48 2008 ichatd[2367]: -- HEARTBEAT --
+Tue Jul  8 03:08:48 2008 ichatd[2367]: -- HEARTBEAT --
+Tue Jul  8 03:08:48 2008 ichatd[2367]: -- HEARTBEAT --
+Tue Jul  8 03:08:48 2008 ichatd[2367]: -- HEARTBEAT --
+Tue Jul  8 03:08:48 2008 ichatd[2367]: -- HEARTBEAT --
+[many thousands of repeating strings]
+Tue Jul  8 03:08:49 2008 ichatd[2367]: -- HEARTBEAT --
+[...]
+Tue Jul  8 03:08:50 2008 ichatd[2367]: -- HEARTBEAT --
+[...]
+Tue Jul  8 03:08:51 2008 ichatd[2367]: -- HEARTBEAT --
+[...]
+Tue Jul  8 03:08:52 2008 ichatd[2367]: -- HEARTBEAT --
+[...]
+Tue Jul  8 03:08:53 2008 ichatd[2367]: -- HEARTBEAT --
+[...]
+Tue Jul  8 03:08:54 2008 ichatd[2367]: -- HEARTBEAT --
+[...]
+Tue Jul  8 03:08:55 2008 ichatd[2367]: -- HEARTBEAT --
+[...]
+Tue Jul  8 03:08:56 2008 ichatd[2367]: -- HEARTBEAT --
+[...]
+Tue Jul  8 03:08:57 2008 ichatd[2367]: -- HEARTBEAT --
+[...]
+Tue Jul  8 03:08:58 2008 ichatd[2367]: -- HEARTBEAT --
+[...]
+Tue Jul  8 03:08:59 2008 ichatd[2367]: -- HEARTBEAT --
+[...]
+Tue Jul  8 03:09:00 2008 ichatd[2367]: -- HEARTBEAT --
+[...]
+Tue Jul  8 03:09:01 2008 ichatd[2367]: -- HEARTBEAT --
+[...]
+Tue Jul  8 03:09:02 2008 ichatd[2367]: -- HEARTBEAT --
+[...]
+Tue Jul  8 03:09:03 2008 ichatd[2367]: -- HEARTBEAT --
+[...]
+Tue Jul  8 03:09:04 2008 ichatd[2367]: -- HEARTBEAT --
+[...]
+Tue Jul  8 03:09:04 2008 ichatd[2367]: -- HEARTBEAT --
+Tue Jul  8 03:14:04 2008 ichatd[2367]: -- HEARTBEAT --
+[stabilized]
+
+task handling code should be reviewed to eliminate such bugs.
