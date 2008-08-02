@@ -17,12 +17,12 @@ do
     if $compiler -v 2>/dev/null
       then
         build_dir="$(pwd)/.build-$compiler"
-	build_log="$build_dir/build_log"
+        build_log="$build_dir/build_log"
 
         mkdir -p "$build_dir"
-        make -C .. CC="$compiler" O="$build_dir" $@ 2>&1 > "$build_log" &&
+        make -C .. CC="$compiler" O="$build_dir" $@ > "$build_log" 2>&1 &&
         echo "$compiler: PASS" ||
-	echo "$compiler: FAIL"
+        echo "$compiler: FAIL"
       else
         echo "$compiler: SKIP"
     fi
