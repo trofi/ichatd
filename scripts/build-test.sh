@@ -6,10 +6,13 @@ gcc
 gcc-3.4.6
 gcc-4.1.2
 gcc-4.2.3
+gcc-4.2.4
 
 x86_64-pc-linux-gnu-gcc
 arm-vfp-linux-gnueabi-gcc
 mingw32-gcc
+
+winegcc
 "
 
 for compiler in $test_on
