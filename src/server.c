@@ -474,6 +474,19 @@ server_detach (struct server * server)
     */
     return 0;
 }
+static void server_schedule (struct server * server)
+{
+    assert (server);
+    while (server->task_queue
+            && server->task_queue->time <= GetTimerMS())
+    {
+        struct timed_task * task = server_pop_task (server);
+
+        DEBUG ("%s: popping + execing task %p", __func__, task);
+
+        task_run (task);
+    }
+}
 
 static enum SERVER_STATUS
 server_start_dispatcher (struct server * server)
@@ -486,6 +499,8 @@ server_start_dispatcher (struct server * server)
             return SERVER_STOP_REQUESTED;
         if (result == POLL_ERROR)
             return SERVER_OK; //FIXME: set proper error
+
+        server_schedule(server);
     }
     return SERVER_OK;
 }

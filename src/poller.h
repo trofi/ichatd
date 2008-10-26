@@ -13,5 +13,5 @@ struct client;
 
 enum POLL_RESULT
 server_poll (struct server * server);
-                              
+
 #endif // __POLLER_H__

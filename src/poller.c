@@ -21,7 +21,7 @@ enum POLL_RESULT
 server_poll (struct server * server)
 {
     struct client * clnt = 0; // unneeded init
-    
+
     for (;;)
     {
         // TODO: add array of pointers to client structs (fast search, if we need 'em)
@@ -112,6 +112,15 @@ server_poll (struct server * server)
     if (result == -1 && errno != EINTR)
     {
         WARN ("%s: %s", __func__, strerror (errno));
+        switch (errno)
+        {
+            case EBADF:
+                WARN ("%s: %s", __func__, "hmm.. EBADF happened");
+            case EINTR:
+            default:
+                // all ok. ignore and quit
+                return POLL_OK;
+        }
         return POLL_ERROR;
     }
     POLL_DEBUG ("%s: check", __func__);
@@ -136,16 +145,6 @@ server_poll (struct server * server)
             POLL_DEBUG ("%s: do [E]%d", __func__, clnt->fd);
         }
     }
-    POLL_DEBUG ("%s: timeouts check", __func__);
-    while (server->task_queue
-            && server->task_queue->time <= GetTimerMS())
-    {
-        struct timed_task * task = server_pop_task (server);
 
-        POLL_DEBUG ("%s: popping + execing task %p", __func__, task);
-
-        task_run (task);
-    }
-    POLL_DEBUG ("%s: check done", __func__);
     return POLL_OK;
 }
