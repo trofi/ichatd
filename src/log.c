@@ -40,7 +40,7 @@ static pthread_mutex_t log_mutex;
 
 int
 open_log (const char * fname)
-{    
+{
     if (!(log_file = fopen (fname, "a+t")))
     {
         perror ("Error opening log file\n");
@@ -92,7 +92,7 @@ print2log (enum LOG_LEVEL level, const char * msg, ...)
     LOG_LOCK;
     {
         time_t tp = time (NULL);
-        char * ts = ctime (&tp);    
+        char * ts = ctime (&tp);
         // clip finishing \n symbol
         ts[strlen (ts) - 1] = 0;
         // write header
@@ -143,41 +143,41 @@ log_print_array (enum LOG_LEVEL level, const char * p, unsigned int len)
     for (; src < p + len; ++src)
     {
         if (*src == '\0')
-	{
-	    *(dst++) = '\\';
-	    *(dst++) = '0';
-	}
-	else if (*src == '%')
-	{
-	    *(dst++) = '%';
-	    *(dst++) = '%';
-	}
-	else if (isprint (*src))
-	{
-	    *(dst++) = *src;
-	}
+        {
+            *(dst++) = '\\';
+            *(dst++) = '0';
+        }
+        else if (*src == '%')
+        {
+            *(dst++) = '%';
+            *(dst++) = '%';
+        }
+        else if (isprint (*src))
+        {
+            *(dst++) = *src;
+        }
         else if (*src == '\r')
-	{
-	    *(dst++) = '\\';
-	    *(dst++) = 'r';
-	}
+        {
+            *(dst++) = '\\';
+            *(dst++) = 'r';
+        }
         else if (*src == '\n')
-	{
-	    *(dst++) = '\\';
-	    *(dst++) = 'n';
-	}
+        {
+            *(dst++) = '\\';
+            *(dst++) = 'n';
+        }
         else if (*src == '\t')
-	{
-	    *(dst++) = '\\';
-	    *(dst++) = 't';
-	}
-	else
-	{
-	    *(dst++) = '\\';
-	    *(dst++) = 'x';
-	    *(dst++) = hex[((unsigned char)*src) / 16];
-	    *(dst++) = hex[((unsigned char)*src) % 16];
-	}
+        {
+            *(dst++) = '\\';
+            *(dst++) = 't';
+        }
+        else
+        {
+            *(dst++) = '\\';
+            *(dst++) = 'x';
+            *(dst++) = hex[((unsigned char)*src) / 16];
+            *(dst++) = hex[((unsigned char)*src) % 16];
+        }
     }
     *dst = '\0';
     print2log (level, "array(%p) = %s", p, q);
