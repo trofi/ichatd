@@ -5,8 +5,8 @@ TARGET  = $(O)/ichatd
 # mudflap=1
 # debug=1
 # noopt=1
-#
-# example: make debug=1 mudflap=1
+# sp=1
+# example: make debug=1 mudflap=1 sp=1
 
 CFLAGS  += -MMD -W -Wall -Werror -Isrc -Wformat
 
@@ -17,6 +17,11 @@ UNUSED_CFLAGS := -Wc++-compat
 ifdef mudflap
     CFLAGS  += -fmudflap
     LDFLAGS += -lmudflap
+endif
+
+# stack protect
+ifdef sp
+    CFLAGS  += -fstack-protector-all -D_FORTIFY_SOURCE=2
 endif
 
 ifdef debug
@@ -49,12 +54,12 @@ $(TARGET): $(OBJS)
 	@$(CC) $(CFLAGS) $^ -o $@ $(LDFLAGS)
 
 $(O)/%.o: %.c
-	@mkdir -p $$(dirname $@)
+	@mkdir -p $(shell dirname "$@")
 	@echo "[CC] $@"
 	@$(CC) $(CFLAGS) -c $< -o $@
 
 $(O)/%.C: %.c
-	@mkdir -p $$(dirname $@)
+	@mkdir -p $(shell dirname "$@")
 	@echo "[CC] $@"
 	@$(CC) $(CFLAGS) -E $< -o $@
 
