@@ -8,6 +8,9 @@ TARGET  = $(O)/ichatd
 # sp=1
 # example: make debug=1 mudflap=1 sp=1
 
+# no implicit rules. they are pretty-printed
+MAKEFLAGS += -r
+
 CFLAGS  += -MMD -W -Wall -Werror -Isrc -Wformat
 
 # some gcc's do not support all the features
