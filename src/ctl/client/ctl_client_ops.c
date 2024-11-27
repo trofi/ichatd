@@ -113,6 +113,7 @@ ctl_client_read_op(struct server * server,
     {
         case -1:
             NOTE ("ctl client[fd=%d] read error: %s", client->fd, strerror (errno));
+            /* fallthrough */
         case  0:
             client->corrupt = 1;
             return;
@@ -162,6 +163,7 @@ ctl_client_write_op(struct server * server,
     {
         case -1:
             NOTE ("ctl client[fd=%d] write error: %s", client->fd, strerror (errno));
+            /* fallthrough */
         case  0:
             client->corrupt = 1;
             return;

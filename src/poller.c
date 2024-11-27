@@ -116,6 +116,7 @@ server_poll (struct server * server)
         {
             case EBADF:
                 WARN ("%s: %s", __func__, "hmm.. EBADF happened");
+                /* fallthrough */
             case EINTR:
             default:
                 // all ok. ignore and quit

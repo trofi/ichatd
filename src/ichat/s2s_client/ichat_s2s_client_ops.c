@@ -160,6 +160,7 @@ ichat_s2s_client_read_op(struct server * server,
     {
         case -1:
             DEBUG ("%s: ichat s2s client[fd=%d] read error (%s)", __func__, client->fd, strerror (errno));
+            /* fallthrough */
         case  0:
             client->corrupt = 1;
             return;
@@ -247,6 +248,7 @@ ichat_s2s_client_write_op(struct server * server,
     {
         case -1:
             DEBUG ("%s: ichat s2s client[fd=%d] write error (%s)", __func__, client->fd, strerror (errno));
+            /* fallthrough */
         case  0:
             client->corrupt = 1;
             return;
